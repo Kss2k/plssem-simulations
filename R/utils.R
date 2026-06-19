@@ -52,6 +52,7 @@ get_output <- function(func,
   output <- data.frame(
     par = paste0(parTable$lhs, parTable$op, parTable$rhs),
     est = NA,
+    se  = NA,
     true = as.numeric(parTable$mod),
     method = method,
     id = id,
@@ -70,7 +71,8 @@ get_output <- function(func,
     tryCatch(
       expr = {
         est <- func(syntax.clean, data, ...)
-        output$est <- est[output$par]
+        output$est <- est[output$par, "est"]
+        output$se  <- est[output$par, "se"]
         output$admissible <- attr(est, "admissible")
       },
       error = \(e) {
@@ -98,7 +100,7 @@ print.simoutput <- function(x, ...) {
 }
 
 
-print_sep <-  \() cat(strrep("─", options("width")[[1]]), "\n")
+print_sep <- \() cat(strrep("─", options("width")[[1]]), "\n")
 
 
 sim_cont_data <- function(syntax, n = n) {

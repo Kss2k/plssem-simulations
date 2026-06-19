@@ -7,8 +7,7 @@ library(mvtnorm)
 library(tidyr)
 library(dplyr)
 library(modsem) # v.1.0.21
-library(plssem) # v.0.1.2
-
+library(plssem) # v.0.1.3
 
 set_project_root()
 setwd("mcpls-nlin")
@@ -30,10 +29,10 @@ models <- c(
    Y =~ 0.8 * y1 + 0.8 * y2 + 0.8 * y3
    Y  ~ 0.4 *  X + 0.5 *  Z + 0.3 * X:Z
    X ~~ 0.2 * Z',
-  # reliability 0.6^2, 3 indicators
-  'X =~ 0.6 * x1 + 0.6 * x2 + 0.6 * x3
-   Z =~ 0.6 * z1 + 0.6 * z2 + 0.6 * z3
-   Y =~ 0.6 * y1 + 0.6 * y2 + 0.6 * y3
+  # reliability 0.5^2, 3 indicators
+  'X =~ 0.5 * x1 + 0.5 * x2 + 0.5 * x3
+   Z =~ 0.5 * z1 + 0.5 * z2 + 0.5 * z3
+   Y =~ 0.5 * y1 + 0.5 * y2 + 0.5 * y3
    Y  ~ 0.4 *  X + 0.5 *  Z + 0.3 * X:Z
    X ~~ 0.2 * Z',
   # reliability 0.9^2, 2 indicators
@@ -48,10 +47,10 @@ models <- c(
    Y =~ 0.8 * y1 + 0.8 * y2
    Y  ~ 0.4 *  X + 0.5 *  Z + 0.3 * X:Z
    X ~~ 0.2 * Z',
-  # reliability 0.6^2, 3 indicators
-  'X =~ 0.6 * x1 + 0.6 * x2
-   Z =~ 0.6 * z1 + 0.6 * z2
-   Y =~ 0.6 * y1 + 0.6 * y2
+  # reliability 0.5^2, 3 indicators
+  'X =~ 0.6 * x1 + 0.5 * x2
+   Z =~ 0.6 * z1 + 0.5 * z2
+   Y =~ 0.6 * y1 + 0.5 * y2
    Y  ~ 0.4 *  X + 0.5 *  Z + 0.3 * X:Z
    X ~~ 0.2 * Z'
 )
@@ -105,7 +104,8 @@ list_thresholds <- list(
 n <- c(200, 500, 1000)
 
 # Set up selection indices which are crossed
-idx.model <- c(5, 6) # two indicators, rel = 0.8^2 and 0.6^2
+# idx.model <- c(5, 6) # two indicators, rel = 0.8^2 and 0.6^2
+idx.model <- c(2, 3) # two indicators, rel = 0.8^2 and 0.6^2
 idx.n     <- seq_along(n)
 idx.ncat  <- c("2", "3", "5")
 idx.skew  <- c("Symmetric", "Moderate", "Extreme", "Alt.Mod", "Alt.Ext")
@@ -125,8 +125,10 @@ est_pls <- function(model, data, ...) {
   fit <- plssem::pls(model, data, ...)
   par <- plssem::parameter_estimates(fit)
 
-  coef <- par$est
-  names(coef) <- paste0(par$lhs, par$op, par$rhs)
+  coef <- cbind(par$est, par$se)
+  rownames(coef) <- paste0(par$lhs, par$op, par$rhs)
+  colnames(coef) <- c("est", "se")
+
   attr(coef, "admissible") <- checkIfParTableIsAdmissible(par)
 
   coef
@@ -152,8 +154,10 @@ est_mplus <- function(model, data, ...) {
   par$lhs <- mapping[par$lhs]
   par$rhs <- mapping[par$rhs]
 
-  coef <- par$est
-  names(coef) <- paste0(par$lhs, par$op, par$rhs)
+  coef <- cbind(par$est, par$std.error)
+  rownames(coef) <- paste0(par$lhs, par$op, par$rhs)
+  colnames(coef) <- c("est", "se")
+
   attr(coef, "admissible") <- checkIfParTableIsAdmissible(par)
 
   coef
@@ -216,20 +220,24 @@ for (i in seq_len(R)) {
 
     results.ij <- list(
       mcpls = get_output(
-        func    = est_pls,
-        data    = data_i,
-        model   = model,
-        method  = "MC-OrdPLSc",
-        ordered = ordered,
-        id      = id,
-        skew    = skew,
-        ncat    = ncat,
-        seed    = seeds[id]
+        func      = est_pls,
+        data      = data_i,
+        ordered   = ordered,
+        bootstrap = TRUE,
+        boot.R    = 500,
+        model     = model,
+        method    = "MC-OrdPLSc",
+        id        = id,
+        skew      = skew,
+        ncat      = ncat,
+        seed      = seeds[id]
       ),
 
       plsc = get_output(
         func       = est_pls,
         data       = data_i,
+        bootstrap  = TRUE,
+        boot.R     = 500,
         model      = model,
         method     = "PLSc",
         consistent = TRUE,
@@ -243,6 +251,8 @@ for (i in seq_len(R)) {
         func       = est_pls,
         data       = data_i,
         model      = model,
+        bootstrap  = TRUE,
+        boot.R     = 500,
         method     = "PLS",
         consistent = FALSE,
         id         = id,
