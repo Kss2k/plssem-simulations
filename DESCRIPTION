@@ -1,0 +1,13 @@
+Type: project
+Title: plssem-simulations 
+Description: simulations for the plssem package
+Imports: 
+  modsem,
+  plssem,
+  MplusAutomation,
+  stringr
+Remotes:
+  kss2k/plssem
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.2
