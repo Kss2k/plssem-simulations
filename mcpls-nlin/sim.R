@@ -107,7 +107,7 @@ n <- c(200, 500, 1000)
 # idx.model <- c(5, 6) # two indicators, rel = 0.8^2 and 0.6^2
 idx.model <- c(2, 3) # two indicators, rel = 0.8^2 and 0.6^2
 idx.n     <- seq_along(n)
-idx.ncat  <- c("2", "3", "5")
+idx.ncat  <- c("2", "3", "5", "7")
 idx.skew  <- c("Symmetric", "Moderate", "Extreme", "Alt.Mod", "Alt.Ext")
 
 IDX <- expand.grid(
@@ -129,7 +129,19 @@ est_pls <- function(model, data, ...) {
   rownames(coef) <- paste0(par$lhs, par$op, par$rhs)
   colnames(coef) <- c("est", "se")
 
-  attr(coef, "admissible") <- checkIfParTableIsAdmissible(par)
+  par.admissible <- checkIfParTableIsAdmissible(par)
+  fit.admissible <- is_admissible(fit) # fit.admissible should be sufficient
+                                       # but we check both (just in case) # fit.admissible should be sufficient
+
+  if (!par.admissible && fit.admissible) {
+    warning("pars are inadmissible! But fit says it's admissible!")
+  } else if (!par.admissible && !fit.admissible) {
+    warning("both pars and fit are inadmissible!")
+  } else if (par.admissible && !fit.admissible) {
+    warning("pars are admissible! But fit says it's inadmissible!")
+  }
+
+  attr(coef, "admissible") <- fit.admissible && par.admissible
 
   coef
 }
