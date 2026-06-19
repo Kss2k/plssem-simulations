@@ -17,14 +17,6 @@ setwd("mcpls-nlin")
 # Model+Parameters
 # ──────────────────────────────────────────────────────────────────────────────
 
-
-corr_X_Z  <- 0.2
-
-
-gamma_Y_X  <- 0.4
-gamma_Y_Z  <- 0.5
-gamma_Y_XZ <- 0.3
-
 models <- c(
   # reliability 0.9^2, 3 indicators
   'X =~ 0.9 * x1 + 0.9 * x2 + 0.9 * x3
@@ -118,7 +110,6 @@ idx.n     <- seq_along(n)
 idx.ncat  <- c("2", "3", "5")
 idx.skew  <- c("Symmetric", "Moderate", "Extreme", "Alt.Mod", "Alt.Ext")
 
-
 IDX <- expand.grid(
   model = idx.model,
   n     = idx.n,
@@ -129,6 +120,7 @@ IDX <- expand.grid(
 # ──────────────────────────────────────────────────────────────────────────────
 # Estimators
 # ──────────────────────────────────────────────────────────────────────────────
+
 est_pls <- function(model, data, ...) {
   fit <- plssem::pls(model, data, ...)
   par <- plssem::parameter_estimates(fit)
@@ -143,7 +135,22 @@ est_pls <- function(model, data, ...) {
 
 est_mplus <- function(model, data, ...) {
   fit <- modsem::modsem_mplus(model, data, ...)
+
+  mod <- modsemify(model)
   par <- modsem::standardized_estimates(fit)
+
+  # Mplus is case insenstitive, so we have to account for that
+  vars0 <- union(mod$lhs, mod$rhs)
+  vars1 <- union(par$lhs, par$rhs)
+  
+  # Create mapping from upper to lower
+  is.upper <- tolower(vars1) %in% vars0
+  mapping <- stats::setNames(vars1, nm = vars1)
+  mapping[is.upper] <- tolower(mapping[is.upper])
+
+  # Map upper to lower
+  par$lhs <- mapping[par$lhs]
+  par$rhs <- mapping[par$rhs]
 
   coef <- par$est
   names(coef) <- paste0(par$lhs, par$op, par$rhs)
@@ -172,10 +179,17 @@ for (i in seq_len(R)) {
 
   filePrefix <- paste("results", run.id, i, sep = "-")
   files <- dir("results/")
+  match <- startsWith(files, filePrefix)
 
-  if (checkIfExists && any(startsWith(files, filePrefix))) {
-    message(sprintf("Skipping iteration batch %d, as it has already been run...", i))
+  if (checkIfExists && any(match)) {
+    message(sprintf(
+      "Skipping iteration batch %d, as it has already been run...", i)
+    )
+
     id <- id + NROW(IDX)
+
+    results.i <- read.csv(files[which(match)[[1L]]])
+    results   <- rbind(results, results.i)
     next
   }
 
@@ -201,54 +215,54 @@ for (i in seq_len(R)) {
     print_sep()
 
     results.ij <- list(
-        mcpls = get_output(
-          func    = est_pls,
-          data    = data_i,
-          model   = model,
-          method  = "MC-OrdPLSc",
-          ordered = ordered,
-          id      = id,
-          skew    = skew,
-          ncat    = ncat,
-          seed    = seeds[id]
-        ),
+      mcpls = get_output(
+        func    = est_pls,
+        data    = data_i,
+        model   = model,
+        method  = "MC-OrdPLSc",
+        ordered = ordered,
+        id      = id,
+        skew    = skew,
+        ncat    = ncat,
+        seed    = seeds[id]
+      ),
 
-        plsc = get_output(
-          func       = est_pls,
-          data       = data_i,
-          model      = model,
-          method     = "PLSc",
-          consistent = TRUE,
-          id         = id,
-          skew       = skew,
-          ncat       = ncat,
-          seed       = seeds[id]
-        ),
+      plsc = get_output(
+        func       = est_pls,
+        data       = data_i,
+        model      = model,
+        method     = "PLSc",
+        consistent = TRUE,
+        id         = id,
+        skew       = skew,
+        ncat       = ncat,
+        seed       = seeds[id]
+      ),
 
-        pls = get_output(
-          func       = est_pls,
-          data       = data_i,
-          model      = model,
-          method     = "PLS",
-          consistent = FALSE,
-          id         = id,
-          skew       = skew,
-          ncat       = ncat,
-          seed       = seeds[id]
-        ),
+      pls = get_output(
+        func       = est_pls,
+        data       = data_i,
+        model      = model,
+        method     = "PLS",
+        consistent = FALSE,
+        id         = id,
+        skew       = skew,
+        ncat       = ncat,
+        seed       = seeds[id]
+      ),
 
-        mplus = get_output(
-          func        = est_mplus,
-          data        = data_i,
-          model       = model,
-          method      = "Mplus",
-          processors  = 8,
-          categorical = ordered,
-          id          = id,
-          skew        = skew,
-          ncat        = ncat,
-          seed        = seeds[id]
-        )
+      mplus = get_output(
+        func        = est_mplus,
+        data        = data_i,
+        model       = model,
+        method      = "Mplus",
+        processors  = 8,
+        categorical = ordered,
+        id          = id,
+        skew        = skew,
+        ncat        = ncat,
+        seed        = seeds[id]
+      )
     )
 
     print(plssem:::plssemParTable(do.call(rbind, unname(results.ij))))
@@ -263,3 +277,11 @@ for (i in seq_len(R)) {
   write.csv(results.i, filename.sub)
   results <- rbind(results, results.i)
 }
+
+filename.sub <-
+  sprintf("results/%s-%s.csv", filePrefix, substr(Sys.time(), 1, 16)) |>
+  stringr::str_replace_all(" ", "-") |>
+  stringr::str_replace_all(":", "-")
+
+write.csv(results.i, filename.sub)
+results <- rbind(results, results.i)

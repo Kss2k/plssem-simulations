@@ -80,7 +80,7 @@ get_output <- function(func,
     )
   })
 
-  output$time <- time
+  output$time <- time[["elapsed"]]
 
   class(output) <- c("simoutput", "data.frame")
   output
