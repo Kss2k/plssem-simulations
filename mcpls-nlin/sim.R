@@ -1,0 +1,265 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Setup
+# ──────────────────────────────────────────────────────────────────────────────
+devtools::load_all() # load custom utils
+
+library(mvtnorm)
+library(tidyr)
+library(dplyr)
+library(modsem) # v.1.0.21
+library(plssem) # v.0.1.2
+
+
+set_project_root()
+setwd("mcpls-nlin")
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Model+Parameters
+# ──────────────────────────────────────────────────────────────────────────────
+
+
+corr_X_Z  <- 0.2
+
+
+gamma_Y_X  <- 0.4
+gamma_Y_Z  <- 0.5
+gamma_Y_XZ <- 0.3
+
+models <- c(
+  # reliability 0.9^2, 3 indicators
+  'X =~ 0.9 * x1 + 0.9 * x2 + 0.9 * x3
+   Z =~ 0.9 * z1 + 0.9 * z2 + 0.9 * z3
+   Y =~ 0.9 * y1 + 0.9 * y2 + 0.9 * y3
+   Y  ~ 0.4 *  X + 0.5 *  Z + 0.3 * X:Z
+   X ~~ 0.2 * Z',
+  # reliability 0.8^2, 3 indicators
+  'X =~ 0.8 * x1 + 0.8 * x2 + 0.8 * x3
+   Z =~ 0.8 * z1 + 0.8 * z2 + 0.8 * z3
+   Y =~ 0.8 * y1 + 0.8 * y2 + 0.8 * y3
+   Y  ~ 0.4 *  X + 0.5 *  Z + 0.3 * X:Z
+   X ~~ 0.2 * Z',
+  # reliability 0.6^2, 3 indicators
+  'X =~ 0.6 * x1 + 0.6 * x2 + 0.6 * x3
+   Z =~ 0.6 * z1 + 0.6 * z2 + 0.6 * z3
+   Y =~ 0.6 * y1 + 0.6 * y2 + 0.6 * y3
+   Y  ~ 0.4 *  X + 0.5 *  Z + 0.3 * X:Z
+   X ~~ 0.2 * Z',
+  # reliability 0.9^2, 2 indicators
+  'X =~ 0.9 * x1 + 0.9 * x2 
+   Z =~ 0.9 * z1 + 0.9 * z2 
+   Y =~ 0.9 * y1 + 0.9 * y2 
+   Y  ~ 0.4 *  X + 0.5 *  Z + 0.3 * X:Z
+   X ~~ 0.2 * Z',
+  # reliability 0.8^2, 2 indicators
+  'X =~ 0.8 * x1 + 0.8 * x2
+   Z =~ 0.8 * z1 + 0.8 * z2
+   Y =~ 0.8 * y1 + 0.8 * y2
+   Y  ~ 0.4 *  X + 0.5 *  Z + 0.3 * X:Z
+   X ~~ 0.2 * Z',
+  # reliability 0.6^2, 3 indicators
+  'X =~ 0.6 * x1 + 0.6 * x2
+   Z =~ 0.6 * z1 + 0.6 * z2
+   Y =~ 0.6 * y1 + 0.6 * y2
+   Y  ~ 0.4 *  X + 0.5 *  Z + 0.3 * X:Z
+   X ~~ 0.2 * Z'
+)
+
+
+# Based on Rhemtulla et al., 2012 and Schubert et al., 2018
+list_thresholds <- list(
+  Symmetric = list(
+    `2` = c( 0.00),
+    `3` = c(-0.83,  0.83),
+    `4` = c(-1.25,  0.00,  1.25),
+    `5` = c(-1.50, -0.50,  0.50, 1.50),
+    `6` = c(-1.60, -0.83,  0.00, 0.83, 1.60),
+    `7` = c(-1.79, -1.07, -0.36, 0.36, 1.07, 1.79)
+  ),
+  Moderate = list(
+    `2` = c( 0.36),
+    `3` = c(-0.50,  0.76),
+    `4` = c(-0.31,  0.79,  1.66),
+    `5` = c(-0.70,  0.39,  1.16,  2.05),
+    `6` = c(-1.05,  0.08,  0.81,  1.44,  2.33),
+    `7` = c(-1.43, -0.43,  0.38,  0.94,  1.44,  2.54)
+  ),
+  Extreme = list(
+    `2` = c( 1.04),
+    `3` = c( 0.58,  1.13),
+    `4` = c( 0.28,  0.71,  1.23),
+    `5` = c( 0.05,  0.44,  0.84,  1.34),
+    `6` = c(-0.13,  0.25,  0.61,  0.99,  1.48),
+    `7` = c(-0.25,  0.13,  0.47,  0.81,  1.18,  1.64)
+  ),
+  Alt.Mod = list(
+    `2` = c(-0.36),
+    `3` = c(-0.76,  0.50),
+    `4` = c(-1.66, -0.79,  0.31),
+    `5` = c(-2.05, -1.16, -0.39,  0.70),
+    `6` = c(-2.33, -1.44, -0.81, -0.08,  1.05),
+    `7` = c(-2.54, -1.44, -0.94, -0.38,  0.43,  1.43)
+  ),
+  Alt.Ext = list(
+    `2` = c(-1.04),
+    `3` = c(-1.13, -0.58),
+    `4` = c(-1.23, -0.71, -0.28),
+    `5` = c(-1.34, -0.84, -0.44, -0.05),
+    `6` = c(-1.48, -0.99, -0.61, -0.25,  0.13),
+    `7` = c(-1.64, -1.18, -0.81, -0.47, -0.13,  0.25)
+  )
+)
+
+
+n <- c(200, 500, 1000)
+
+# Set up selection indices which are crossed
+idx.model <- c(5, 6) # two indicators, rel = 0.8^2 and 0.6^2
+idx.n     <- seq_along(n)
+idx.ncat  <- c("2", "3", "5")
+idx.skew  <- c("Symmetric", "Moderate", "Extreme", "Alt.Mod", "Alt.Ext")
+
+
+IDX <- expand.grid(
+  model = idx.model,
+  n     = idx.n,
+  ncat  = idx.ncat,
+  skew  = idx.skew
+)
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Estimators
+# ──────────────────────────────────────────────────────────────────────────────
+est_pls <- function(model, data, ...) {
+  fit <- plssem::pls(model, data, ...)
+  par <- plssem::parameter_estimates(fit)
+
+  coef <- par$est
+  names(coef) <- paste0(par$lhs, par$op, par$rhs)
+  attr(coef, "admissible") <- checkIfParTableIsAdmissible(par)
+
+  coef
+}
+
+
+est_mplus <- function(model, data, ...) {
+  fit <- modsem::modsem_mplus(model, data, ...)
+  par <- modsem::standardized_estimates(fit)
+
+  coef <- par$est
+  names(coef) <- paste0(par$lhs, par$op, par$rhs)
+  attr(coef, "admissible") <- checkIfParTableIsAdmissible(par)
+
+  coef
+}
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Run Simulation
+# ──────────────────────────────────────────────────────────────────────────────
+checkIfExists <- TRUE
+R             <- 200L
+id            <- 0
+K             <- NROW(IDX)
+total         <- R * K
+run.id        <- "v0"
+
+set.seed(2308257)
+seeds <- floor(runif(total, min = 0, max = 9999999))
+
+results <- NULL
+for (i in seq_len(R)) {
+  results.i <- NULL
+
+  filePrefix <- paste("results", run.id, i, sep = "-")
+  files <- dir("results/")
+
+  if (checkIfExists && any(startsWith(files, filePrefix))) {
+    message(sprintf("Skipping iteration batch %d, as it has already been run...", i))
+    id <- id + NROW(IDX)
+    next
+  }
+
+  for (j in seq_len(NROW(IDX))) {
+    id    <- id + 1
+    skew  <- names(list_thresholds)[[IDX$skew[[i]]]]
+    ncat  <- names(list_thresholds[[skew]])[[IDX$skew[[i]]]]
+    n.i   <- n[[IDX$n[[i]]]]
+    model <- models[[IDX$model[[i]]]]
+    seed  <- seeds[id]
+
+    print_sep()
+    cat(sprintf("i=%i, j=%i, id=%i, total=%i, seed = %i\n", i, j, id, total, seeds[id]))
+    print_sep()
+
+    set.seed(seeds[id])
+    thr <- list_thresholds[[skew]][[ncat]]
+    data_i <- sim_ord_data(syntax = model, thr = thr, n = n.i)
+    ordered <- colnames(data_i)
+
+    print_sep()
+    cat(sprintf("Iteration %d/%d:\n", id, total))
+    print_sep()
+
+    results.ij <- list(
+        mcpls = get_output(
+          func    = est_pls,
+          data    = data_i,
+          model   = model,
+          method  = "MC-OrdPLSc",
+          ordered = ordered,
+          id      = id,
+          skew    = skew,
+          ncat    = ncat,
+          seed    = seeds[id]
+        ),
+
+        plsc = get_output(
+          func       = est_pls,
+          data       = data_i,
+          model      = model,
+          method     = "PLSc",
+          consistent = TRUE,
+          id         = id,
+          skew       = skew,
+          ncat       = ncat,
+          seed       = seeds[id]
+        ),
+
+        pls = get_output(
+          func       = est_pls,
+          data       = data_i,
+          model      = model,
+          method     = "PLS",
+          consistent = FALSE,
+          id         = id,
+          skew       = skew,
+          ncat       = ncat,
+          seed       = seeds[id]
+        ),
+
+        mplus = get_output(
+          func        = est_mplus,
+          data        = data_i,
+          model       = model,
+          method      = "Mplus",
+          processors  = 8,
+          categorical = ordered,
+          id          = id,
+          skew        = skew,
+          ncat        = ncat,
+          seed        = seeds[id]
+        )
+    )
+
+    print(plssem:::plssemParTable(do.call(rbind, unname(results.ij))))
+    results.i <- rbind(results.i, do.call(rbind, unname(results.ij)))
+  }
+
+  filename.sub <-
+    sprintf("results/%s-%s.csv", filePrefix, substr(Sys.time(), 1, 16)) |>
+    stringr::str_replace_all(" ", "-") |>
+    stringr::str_replace_all(":", "-")
+
+  write.csv(results.i, filename.sub)
+  results <- rbind(results, results.i)
+}

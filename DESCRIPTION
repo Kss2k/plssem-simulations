@@ -1,3 +1,4 @@
+Package: plssem-simulations
 Type: project
 Title: plssem-simulations 
 Description: simulations for the plssem package
@@ -11,3 +12,4 @@ Remotes:
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
+Version: 0.0.0
