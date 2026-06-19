@@ -172,9 +172,24 @@ R             <- 200L
 id            <- 0
 K             <- NROW(IDX)
 total         <- R * K
-run.id        <- "v0"
+run.id        <- "v0-test"
 
-set.seed(2308257)
+# The run.id specifies the circumstance the script is running under
+# v0-test is for testing. The other run.ids (see below) specify
+# different computers running parallel simulations. They of course
+# need different seeds, to generate unique results.
+
+LOCAL_SEEDS <- c(
+  "v0-test" = 5340956,
+  "v0-vivo" = 9144416,
+  "v0-tuf"  = 1210967
+)
+
+# The run.id specifies what seed we set
+set.seed(LOCAL_SEEDS[[run.id]])
+
+# each iteration has it own seed, such that we can reproduce a specific
+# iterartion in isolation (if desired). This seed is appended to the output.
 seeds <- floor(runif(total, min = 0, max = 9999999))
 
 results <- NULL
@@ -198,12 +213,18 @@ for (i in seq_len(R)) {
   }
 
   for (j in seq_len(NROW(IDX))) {
+
+    idx.modj  <- IDX$model[[j]]
+    idx.nj    <- IDX$n[[j]]
+    idx.skewj <- IDX$skew[[j]]
+    idx.ncatj <- IDX$ncat[[j]]
+
     id    <- id + 1
-    skew  <- names(list_thresholds)[[IDX$skew[[i]]]]
-    ncat  <- names(list_thresholds[[skew]])[[IDX$skew[[i]]]]
-    n.i   <- n[[IDX$n[[i]]]]
-    model <- models[[IDX$model[[i]]]]
-    seed  <- seeds[id]
+    skew  <- names(list_thresholds)[[idx.skewj]]
+    ncat  <- names(list_thresholds[[idx.skewj]])[[idx.ncatj]]
+    n.i   <- n[[idx.nj]]
+    model <- models[[idx.modj]]
+    seed  <- seeds[[id]]
 
     print_sep()
     cat(sprintf("i=%i, j=%i, id=%i, total=%i, seed = %i\n", i, j, id, total, seeds[id]))
@@ -292,10 +313,10 @@ for (i in seq_len(R)) {
   results <- rbind(results, results.i)
 }
 
-filename.sub <-
+filename <-
   sprintf("results/%s-%s.csv", filePrefix, substr(Sys.time(), 1, 16)) |>
   stringr::str_replace_all(" ", "-") |>
   stringr::str_replace_all(":", "-")
 
-write.csv(results.i, filename.sub)
+write.csv(results.i, filename)
 results <- rbind(results, results.i)
