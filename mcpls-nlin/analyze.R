@@ -69,10 +69,18 @@ admissible <- group_by(df, id, method, loadings, ncat, skew, n) |>
 print(admissible, n = 500)
 
 
-plots_inadmissible <- vector("list", NROW(simsplit))
-plots_bias_b3 <- vector("list", NROW(simsplit))
+EMPTY_LIST <- vector("list", NROW(simsplit))
 
-for (i in seq_len(NROW(simsplit))) {
+plots_inadmissible <- EMPTY_LIST
+plots_time         <- EMPTY_LIST
+plots_bias_l1      <- EMPTY_LIST
+plots_bias_b1      <- EMPTY_LIST
+plots_bias_b2      <- EMPTY_LIST
+plots_bias_b3      <- EMPTY_LIST
+
+
+for (i in seq_len(NROW(simsplit))) suppressMessages({
+  cat(sprintf("%i...\n", i))
   # ----------------------------------------------------------------------------
   # Simulation settings
   # ----------------------------------------------------------------------------
@@ -115,7 +123,7 @@ for (i in seq_len(NROW(simsplit))) {
         se         = sd(est, na.rm = TRUE),
         bias.lower = bias - ci.width * se,
         bias.upper = bias + ci.width * se
-    ) |> print(n=100) |>
+    ) |> 
     mutate(
       ncat = as.factor(ncat),
       par  = sapply(par, \(p) par2tex[[p]])
@@ -143,16 +151,50 @@ for (i in seq_len(NROW(simsplit))) {
   }
 
   # ----------------------------------------------------------------------------
+  # Computation Time
+  # ----------------------------------------------------------------------------
+
+  dodge <- position_dodge(width = 0.9)
+  timeplot <-  
+    filter(df, admissible & n == n.i & loadings == loadings.i) |>
+    group_by(method, ncat, skew) |>
+    summarize(mean_time = mean(time, na.rm = TRUE)) |>
+    mutate(ncat = as.factor(ncat)) |>
+    ggplot(aes(
+      x = ncat,
+      y = mean_time,
+      colour = method,
+      fill = method
+    )) +
+    geom_col(alpha = 0.2, position = dodge) +
+    facet_grid(
+      rows = vars(skew),
+      scales = "fixed"
+    ) +
+    ggtitle(sprintf("n = %i, loadings = %.1f", n.i, loadings.i)) +
+    ylab("Mean Computation Time (seconds)") +
+    xlab("Categories") +
+    theme_bw()
+
+  # ----------------------------------------------------------------------------
   # Save
   # ----------------------------------------------------------------------------
-  
+ 
+  plots_time[[i]] <- timeplot
+  plots_bias_l1[[i]] <- plot_bias("Y~1")
+  plots_bias_b1[[i]] <- plot_bias("Y~X")
+  plots_bias_b2[[i]] <- plot_bias("Y~Z")
   plots_bias_b3[[i]] <- plot_bias("Y~X:Z")
   plots_inadmissible[[i]] <- pinadmissible
-}
+})
 
-target.n <- 1000
+target.n <- 200
 target.l <- 0.8
 idx <- which(simsplit$n == target.n & simsplit$loadings == target.l)
 print(plots_inadmissible[[idx]])
+print(plots_time[[idx]])
+print(plots_bias_l1[[idx]])
+print(plots_bias_b1[[idx]])
+print(plots_bias_b2[[idx]])
 print(plots_bias_b3[[idx]])
 
