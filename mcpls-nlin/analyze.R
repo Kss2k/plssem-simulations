@@ -35,12 +35,12 @@ df <- do.call(rbind, lapply(paths, read)) |>
       levels = methods_ordered,
       labels = methods_ordered
     ),
-    admissible = admissible & !is.na(se) & se < 1 # check SEs when checking admissiblity
   ) |>
   group_by(id, method) |>
   mutate(
     parcombo = paste0(paste0(par, "=", true), collapse = ","),
-    loadings = getModelLoading(par, true)
+    loadings = getModelLoading(par, true),
+    admissible = all(admissible) & !any(is.na(se) & se < 1) # check SEs when checking admissiblity
   )
 
 # We try to split the simulations into sample size, and model parameter combos
@@ -157,7 +157,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
   # ----------------------------------------------------------------------------
   # SD/SE ratio plots
   # ----------------------------------------------------------------------------
-  plot_se_sd_ratio <- function(param = "Y~X:Z") {
+  plot_sd_se_ratio <- function(param = "Y~X:Z") {
 
     filter(
       df,
@@ -189,6 +189,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
         scales = "fixed",
         labeller = label_parsed
       ) +
+      ylim(-1, 3) +
       ggtitle(sprintf("n = %i, loadings = %.1f", n.i, loadings.i)) +
       ylab("SE/SD") +
       xlab("Categories") +
@@ -236,7 +237,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
   plots_inadmissible[[i]] <- pinadmissible
 })
 
-target.n <- 200
+target.n <- 1000
 target.l <- 0.8
 idx <- which(simsplit$n == target.n & simsplit$loadings == target.l)
 print(plots_inadmissible[[idx]])
