@@ -34,7 +34,8 @@ df <- do.call(rbind, lapply(paths, read)) |>
     method = factor(method,
       levels = methods_ordered,
       labels = methods_ordered
-    )
+    ),
+    admissible = admissible & !is.na(se) & se < 1 # check SEs when checking admissiblity
   ) |>
   group_by(id, method) |>
   mutate(
@@ -71,13 +72,15 @@ print(admissible, n = 500)
 
 EMPTY_LIST <- vector("list", NROW(simsplit))
 
-plots_inadmissible <- EMPTY_LIST
-plots_time         <- EMPTY_LIST
-plots_bias_l1      <- EMPTY_LIST
-plots_bias_b1      <- EMPTY_LIST
-plots_bias_b2      <- EMPTY_LIST
-plots_bias_b3      <- EMPTY_LIST
-
+plots_inadmissible   <- EMPTY_LIST
+plots_time           <- EMPTY_LIST
+plots_bias_l1        <- EMPTY_LIST
+plots_bias_b1        <- EMPTY_LIST
+plots_bias_b2        <- EMPTY_LIST
+plots_bias_b3        <- EMPTY_LIST
+plots_sd_se_ratio_b1 <- EMPTY_LIST
+plots_sd_se_ratio_b2 <- EMPTY_LIST
+plots_sd_se_ratio_b3 <- EMPTY_LIST
 
 for (i in seq_len(NROW(simsplit))) suppressMessages({
   cat(sprintf("%i...\n", i))
@@ -150,6 +153,48 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
     theme_bw()
   }
 
+
+  # ----------------------------------------------------------------------------
+  # SD/SE ratio plots
+  # ----------------------------------------------------------------------------
+  plot_se_sd_ratio <- function(param = "Y~X:Z") {
+
+    filter(
+      df,
+      admissible & par == param[[1]] & n == n.i & loadings == loadings.i
+    ) |>
+      group_by(method, ncat, skew, par) |>
+      summarize(
+        se = mean(se, na.rm = TRUE),
+        sd = sd(est, na.rm = TRUE),
+        ratio = se / sd,
+        .groups = "drop"
+      ) |>
+      mutate(
+        ncat = factor(ncat),
+        par = sapply(par, \(p) par2tex[[p]])
+      ) |>
+      ggplot(aes(
+        x = ncat,
+        y = ratio,
+        colour = method,
+        shape = method,
+        group = method
+      )) +
+      geom_line(linewidth = 0.5) +
+      geom_point(size = 2) +
+      facet_grid(
+        rows = vars(skew),
+        cols = vars(par),
+        scales = "fixed",
+        labeller = label_parsed
+      ) +
+      ggtitle(sprintf("n = %i, loadings = %.1f", n.i, loadings.i)) +
+      ylab("SE/SD") +
+      xlab("Categories") +
+      theme_bw()
+  }
+
   # ----------------------------------------------------------------------------
   # Computation Time
   # ----------------------------------------------------------------------------
@@ -185,6 +230,9 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
   plots_bias_b1[[i]] <- plot_bias("Y~X")
   plots_bias_b2[[i]] <- plot_bias("Y~Z")
   plots_bias_b3[[i]] <- plot_bias("Y~X:Z")
+  plots_sd_se_ratio_b1[[i]] <- plot_sd_se_ratio("Y~X")
+  plots_sd_se_ratio_b2[[i]] <- plot_sd_se_ratio("Y~Z")
+  plots_sd_se_ratio_b3[[i]] <- plot_sd_se_ratio("Y~X:Z")
   plots_inadmissible[[i]] <- pinadmissible
 })
 
@@ -197,4 +245,6 @@ print(plots_bias_l1[[idx]])
 print(plots_bias_b1[[idx]])
 print(plots_bias_b2[[idx]])
 print(plots_bias_b3[[idx]])
-
+print(plots_sd_se_ratio_b1[[idx]])
+print(plots_sd_se_ratio_b2[[idx]])
+print(plots_sd_se_ratio_b3[[idx]])

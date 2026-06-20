@@ -220,6 +220,7 @@ for (i in seq_len(R)) {
     id <- id + NROW(IDX)
 
     results.i <- read.csv(files[which(match)[[1L]]])
+    results.i <- results.i[-1] # drop rownames
     results   <- rbind(results, results.i)
     next
   }
