@@ -116,7 +116,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
   # ----------------------------------------------------------------------------
 
   dodge <- position_dodge(width = 0.9)
-  plot_bias <- function(param = "Y~X:Z", ci.width = qnorm(0.975)) {
+  plot_bias <- function(param = "Y~X:Z", ci.width = 1) {
   
     filter(df,
       admissible & par == param[[1]] & n == n.i & loadings == loadings.i
