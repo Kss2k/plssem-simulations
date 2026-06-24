@@ -234,7 +234,7 @@ for (i in seq_len(R)) {
 
     id    <- id + 1
     skew  <- names(list_thresholds)[[idx.skewj]]
-    ncat  <- names(list_thresholds[[idx.skewj]])[[idx.ncatj]]
+    ncat  <- names(list_thresholds[[idx.skewj]][idx.ncatj]) # could just write ncat <- idx.ncatj
     n.i   <- n[[idx.nj]]
     model <- models[[idx.modj]]
     seed  <- seeds[[id]]
