@@ -80,7 +80,7 @@ get_output <- function(func,
         output$admissible <- attr(est, "admissible")
 
         if (length(results$warnings)) {
-          msg <- paste0(conditionMessage(results$warnings), collapse = ";")
+          msg <- paste0(results$warnings, collapse = ";")
           plssem:::pls_msg_warn_immediate(
             sprintf("method=%s, id=%i, message(s)=%s", method, id, msg)
           )
