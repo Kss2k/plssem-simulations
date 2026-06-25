@@ -255,8 +255,8 @@ run_batch <- function(i) {
     # `id` is derived from (i, j) so each batch is independent and the ids match
     # the sequential run exactly.
     id    <- (i - 1L) * K + j
-    skew  <- names(list_thresholds)[[idx.skewj]]
-    ncat  <- names(list_thresholds[[idx.skewj]][idx.ncatj]) # could just write ncat <- idx.ncatj
+    skew  <- as.character(idx.skewj)
+    ncat  <- as.character(idx.ncatj)
     n.i   <- n[[idx.nj]]
     model <- models[[idx.modj]]
     seed  <- seeds[[id]]
