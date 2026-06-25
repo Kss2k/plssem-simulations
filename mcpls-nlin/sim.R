@@ -287,6 +287,7 @@ run_batch <- function(i) {
         n         = n.i,
         skew      = skew,
         ncat      = ncat,
+        model.id  = idx.modj,
         seed      = seeds[id]
       ),
 
@@ -302,6 +303,7 @@ run_batch <- function(i) {
         id         = id,
         skew       = skew,
         ncat       = ncat,
+        model.id   = idx.modj,
         seed       = seeds[id]
       ),
 
@@ -317,6 +319,7 @@ run_batch <- function(i) {
         id         = id,
         skew       = skew,
         ncat       = ncat,
+        model.id   = idx.modj,
         seed       = seeds[id]
       ),
 
@@ -331,6 +334,7 @@ run_batch <- function(i) {
         id          = id,
         skew        = skew,
         ncat        = ncat,
+        model.id    = idx.modj,
         seed        = seeds[id]
       )
     )

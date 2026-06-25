@@ -39,12 +39,13 @@ get_output <- function(func,
                        model,
                        data,
                        ...,
-                       method = NA,
-                       id     = NA,
-                       skew   = "",
-                       ncat   = "",
-                       n      = 0,
-                       seed   = NULL) {
+                       method   = NA,
+                       id       = NA,
+                       skew     = "",
+                       ncat     = "",
+                       n        = 0,
+                       model.id = 0,
+                       seed     = NULL) {
   parTable <- modsemify(model)
   parTable2 <- parTable; parTable2$mod <- ""
   syntax.clean <- modsem:::parTableToSyntax(parTable2)
@@ -60,6 +61,7 @@ get_output <- function(func,
     n = n,
     skew = skew,
     ncat = ncat,
+    model.id = model.id,
     admissible = FALSE,
     time = NA
   )
