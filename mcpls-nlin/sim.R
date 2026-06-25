@@ -9,8 +9,13 @@ library(dplyr)
 library(modsem) # v.1.0.21
 library(plssem) # v.0.1.3
 
-set_project_root()
+.root_info   <- set_project_root()
 setwd("mcpls-nlin")
+
+# Absolute path, so parallel workers (which do not inherit the master's working
+# directory) read/write results in the right place regardless of their wd.
+PROJECT_ROOT <- .root_info$project.root
+RESULTS_DIR <- normalizePath("results", mustWork = FALSE)
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Model+Parameters
@@ -181,10 +186,19 @@ est_mplus <- function(model, data, ...) {
 # ──────────────────────────────────────────────────────────────────────────────
 checkIfExists <- TRUE
 R             <- 200L
-id            <- 0
 K             <- NROW(IDX)
 total         <- R * K
-run.id        <- "v0-test"
+run.id        <- NULL
+
+
+# ── Parallelisation ───────────────────────────────────────────────────────────
+# Set `parallel <- TRUE` to evaluate the R batches concurrently with the
+# `future` package. Each batch (one value of the outer `i` index) is fully
+# independent: it derives its iteration ids from `i`, sets its own per-iteration
+# seeds, and writes its own results CSV. The batches can therefore run in any
+# order / in parallel and still reproduce the sequential output exactly.
+parallel  <- TRUE
+n.workers <- 4
 
 # The run.id specifies the circumstance the script is running under
 # v0-test is for testing. The other run.ids (see below) specify
@@ -197,6 +211,13 @@ LOCAL_SEEDS <- c(
   "v0-tuf"  = 1210967
 )
 
+if (is.null(run.id)) {
+  cat("What run.id do you want to use? Available:\n")
+  print(names(LOCAL_SEEDS))
+  run.id.idx <- as.integer(readLines(n=1))
+  run.id <- names(LOCAL_SEEDS)[[run.id.idx]]
+}
+
 # The run.id specifies what seed we set
 set.seed(LOCAL_SEEDS[[run.id]])
 
@@ -204,12 +225,14 @@ set.seed(LOCAL_SEEDS[[run.id]])
 # iterartion in isolation (if desired). This seed is appended to the output.
 seeds <- floor(runif(total, min = 0, max = 9999999))
 
-results <- NULL
-for (i in seq_len(R)) {
-  results.i <- NULL
-
+# Run a single batch `i` (one full pass over IDX) and return its results.
+# Self-contained so it can be called sequentially or dispatched to a future
+# worker: ids and seeds are derived from `i`, and it writes its own CSV.
+run_batch <- function(i) {
+  results.i  <- NULL
   filePrefix <- paste("results", run.id, i, sep = "-")
-  files <- dir("results/")
+
+  files <- dir(RESULTS_DIR)
   match <- startsWith(files, filePrefix)
 
   if (checkIfExists && any(match)) {
@@ -217,12 +240,9 @@ for (i in seq_len(R)) {
       "Skipping iteration batch %d, as it has already been run...", i)
     )
 
-    id <- id + NROW(IDX)
-
-    results.i <- read.csv(files[which(match)[[1L]]])
+    results.i <- read.csv(file.path(RESULTS_DIR, files[which(match)[[1L]]]))
     results.i <- results.i[-1] # drop rownames
-    results   <- rbind(results, results.i)
-    next
+    return(results.i)
   }
 
   for (j in seq_len(NROW(IDX))) {
@@ -232,7 +252,9 @@ for (i in seq_len(R)) {
     idx.skewj <- IDX$skew[[j]]
     idx.ncatj <- IDX$ncat[[j]]
 
-    id    <- id + 1
+    # `id` is derived from (i, j) so each batch is independent and the ids match
+    # the sequential run exactly.
+    id    <- (i - 1L) * K + j
     skew  <- names(list_thresholds)[[idx.skewj]]
     ncat  <- names(list_thresholds[[idx.skewj]][idx.ncatj]) # could just write ncat <- idx.ncatj
     n.i   <- n[[idx.nj]]
@@ -317,19 +339,42 @@ for (i in seq_len(R)) {
     results.i <- rbind(results.i, do.call(rbind, unname(results.ij)))
   }
 
-  filename.sub <-
-    sprintf("results/%s-%s.csv", filePrefix, substr(Sys.time(), 1, 16)) |>
+  stamp <- substr(Sys.time(), 1, 16) |>
     stringr::str_replace_all(" ", "-") |>
     stringr::str_replace_all(":", "-")
 
+  filename.sub <- file.path(RESULTS_DIR, sprintf("%s-%s.csv", filePrefix, stamp))
   write.csv(results.i, filename.sub)
-  results <- rbind(results, results.i)
+
+  results.i
 }
 
-filename <-
-  sprintf("results/%s-%s.csv", filePrefix, substr(Sys.time(), 1, 16)) |>
-  stringr::str_replace_all(" ", "-") |>
-  stringr::str_replace_all(":", "-")
 
-write.csv(results.i, filename)
-results <- rbind(results, results.i)
+if (parallel) {
+  library(future)
+  library(future.apply)
+
+  # Source the project utilities as plain globals so `future` exports them to
+  # the workers cleanly, rather than via the devtools::load_all() shadow package
+  # (whose name contains a "-" and cannot be attached by name in a worker).
+  source(file.path(PROJECT_ROOT, "R", "utils.R"))
+
+  oplan <- plan(multisession, workers = n.workers)
+  on.exit(plan(oplan), add = TRUE)
+
+  message(sprintf("Running %d batches across %d workers...", R, n.workers))
+
+  results_list <- future.apply::future_lapply(
+    seq_len(R),
+    run_batch,
+    future.seed     = TRUE,
+    future.packages = c("modsem", "plssem", "mvtnorm", "tidyr",
+                        "dplyr", "purrr", "stringr", "stats")
+  )
+
+} else {
+  results_list <- lapply(seq_len(R), run_batch)
+}
+
+# Each batch already wrote its own CSV; this is just the in-memory aggregate.
+results <- do.call(rbind, results_list)
