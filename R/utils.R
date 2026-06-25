@@ -67,19 +67,24 @@ get_output <- function(func,
   if (!is.null(seed))
     set.seed(seed)
 
+  f.quiet <- purrr::quietly(func)
+
   time <- system.time({
     tryCatch(
       expr = {
-        est <- func(syntax.clean, data, ...)
+        results <- f.quiet(syntax.clean, data, ...)
+
+        est <- results$result
         output$est <- est[output$par, "est"]
         output$se  <- est[output$par, "se"]
         output$admissible <- attr(est, "admissible")
-      },
-      warning = \(w) {
-        msg <- paste0(conditionMessage(w), collapse = ";")
-        plssem:::pls_msg_warn_immediate(
-          sprintf("method=%s, id=%i, message(s)=%s", method, id, msg)
-        )
+
+        if (length(results$warnings)) {
+          msg <- paste0(conditionMessage(results$warnings), collapse = ";")
+          plssem:::pls_msg_warn_immediate(
+            sprintf("method=%s, id=%i, message(s)=%s", method, id, msg)
+          )
+        }
       },
       error = \(e) {
         warning(sprintf("%s (%d) failed!, message:\n %s", method, id, e))
