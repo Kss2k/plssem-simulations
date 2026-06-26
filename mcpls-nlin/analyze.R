@@ -9,6 +9,7 @@ library(scales)
 
 rdir <- "mcpls-nlin/results/"
 files <- dir(rdir)
+files <- files[endsWith(files, ".csv")]
 paths <- paste0(rdir, files)
 ids   <- abbreviate(files, 6)
 
