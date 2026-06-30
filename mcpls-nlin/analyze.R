@@ -165,11 +165,11 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
 
     filter(
       df,
-      admissible.se & par == param[[1]] & n == n.i & loadings == loadings.i
+      par == param[[1]] & n == n.i & loadings == loadings.i
     ) |>
       group_by(method, ncat, skew, par) |>
       summarize(
-        se = mean(se, na.rm = TRUE),
+        se = mean(se[admissible.se], na.rm = TRUE),
         sd = sd(est, na.rm = TRUE),
         ratio = se / sd,
         .groups = "drop"
@@ -211,11 +211,11 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
 
     filter(
       df,
-      admissible.se & par == param[[1]] & n == n.i & loadings == loadings.i
+      par == param[[1]] & n == n.i & loadings == loadings.i
     ) |>
       group_by(method, ncat, skew, par) |>
       summarize(
-        se = mean(se, na.rm = TRUE),
+        se = mean(se[admissible.se], na.rm = TRUE),
         sd = sd(est, na.rm = TRUE),
         .groups = "drop"
       ) |>
@@ -295,7 +295,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
 })
 
 target.n <- 500
-target.l <- 0.8
+target.l <- 0.5
 idx <- which(simsplit$n == target.n & simsplit$loadings == target.l)
 print(plots_inadmissible[[idx]])
 print(plots_time[[idx]])
