@@ -17,6 +17,19 @@ setwd("mcpls-nlin")
 PROJECT_ROOT <- .root_info$project.root
 RESULTS_DIR <- normalizePath("results", mustWork = FALSE)
 
+# Run settings. Edit these before sourcing/running this script in R.
+reestimate <- FALSE
+reestimate.methods <- c("MC-OrdPLSc", "PLS")
+reestimate.files <- character()
+# reestimate.files <- list.files("results", pattern = "^results-v0-test.*[.]csv$", full.names = TRUE)
+
+checkIfExists <- TRUE
+R             <- 200L
+run.id        <- NULL
+
+parallel  <- TRUE
+n.workers <- 4
+
 # ──────────────────────────────────────────────────────────────────────────────
 # Model+Parameters
 # ──────────────────────────────────────────────────────────────────────────────
@@ -181,14 +194,212 @@ est_mplus <- function(model, data, ...) {
 }
 
 
+run_estimators <- function(methods,
+                           data_i,
+                           ordered,
+                           model,
+                           id,
+                           n.i,
+                           skew,
+                           ncat,
+                           model.id,
+                           seed) {
+  methods <- match.arg(
+    methods,
+    choices = c("MC-OrdPLSc", "PLSc", "PLS", "Mplus"),
+    several.ok = TRUE
+  )
+
+  run_one <- function(method) {
+    switch(
+      method,
+      "MC-OrdPLSc" = get_output(
+        func      = est_pls,
+        data      = data_i,
+        ordered   = ordered,
+        bootstrap = TRUE,
+        boot.R    = 500,
+        model     = model,
+        method    = "MC-OrdPLSc",
+        id        = id,
+        n         = n.i,
+        skew      = skew,
+        ncat      = ncat,
+        model.id  = model.id,
+        seed      = seed
+      ),
+
+      "PLSc" = get_output(
+        func       = est_pls,
+        data       = data_i,
+        bootstrap  = TRUE,
+        boot.R     = 500,
+        model      = model,
+        method     = "PLSc",
+        consistent = TRUE,
+        n          = n.i,
+        id         = id,
+        skew       = skew,
+        ncat       = ncat,
+        model.id   = model.id,
+        seed       = seed
+      ),
+
+      "PLS" = get_output(
+        func       = est_pls,
+        data       = data_i,
+        model      = model,
+        bootstrap  = TRUE,
+        boot.R     = 500,
+        method     = "PLS",
+        consistent = FALSE,
+        n          = n.i,
+        id         = id,
+        skew       = skew,
+        ncat       = ncat,
+        model.id   = model.id,
+        seed       = seed
+      ),
+
+      "Mplus" = get_output(
+        func        = est_mplus,
+        data        = data_i,
+        model       = model,
+        cleanup     = TRUE,
+        method      = "Mplus",
+        processors  = 2,
+        categorical = ordered,
+        n           = n.i,
+        id          = id,
+        skew        = skew,
+        ncat        = ncat,
+        model.id    = model.id,
+        seed        = seed
+      )
+    )
+  }
+
+  stats::setNames(lapply(methods, run_one), methods)
+}
+
+
+drop_csv_row_names <- function(x) {
+  if (NROW(x) && names(x)[[1L]] %in% c("", "X", "X.1")) {
+    x <- x[-1L]
+  }
+
+  x
+}
+
+
+resolve_results_file <- function(path) {
+  candidates <- c(
+    path,
+    file.path(PROJECT_ROOT, path),
+    file.path(RESULTS_DIR, basename(path))
+  )
+  candidates <- unique(candidates)
+  hit <- file.exists(candidates)
+
+  if (!any(hit)) {
+    stop(sprintf("Could not find results file: %s", path), call. = FALSE)
+  }
+
+  normalizePath(candidates[which(hit)[[1L]]], mustWork = TRUE)
+}
+
+
+replace_reestimated_rows <- function(old, new, methods) {
+  old$key <- paste(old$id, old$method, old$par, sep = "\r")
+  new$key <- paste(new$id, new$method, new$par, sep = "\r")
+
+  old_pos <- match(new$key, old$key)
+  replace <- !is.na(old_pos)
+
+  old[old_pos[replace], names(new)] <- new[replace, names(new)]
+  out <- rbind(old[names(old) != "key"], new[!replace, names(old)[names(old) != "key"]])
+
+  rownames(out) <- NULL
+  out
+}
+
+
+reestimate_file <- function(path, methods) {
+  path <- resolve_results_file(path)
+  message(sprintf("Re-estimating %s in %s", paste(methods, collapse = ", "), path))
+
+  old <- drop_csv_row_names(read.csv(path))
+  required <- c("id", "seed", "n", "skew", "ncat", "model.id", "method", "par")
+  missing <- setdiff(required, names(old))
+
+  if (length(missing)) {
+    stop(
+      sprintf("Results file is missing required columns: %s", paste(missing, collapse = ", ")),
+      call. = FALSE
+    )
+  }
+
+  settings <- unique(old[old$method %in% methods, c("id", "seed", "n", "skew", "ncat", "model.id")])
+  if (!NROW(settings)) {
+    warning(sprintf("No rows matching selected method(s) in %s", path))
+    return(invisible(old))
+  }
+
+  new_list <- vector("list", NROW(settings))
+
+  for (k in seq_len(NROW(settings))) {
+    setting <- settings[k, ]
+
+    id       <- as.integer(setting$id)
+    seed     <- as.integer(setting$seed)
+    n.i      <- as.integer(setting$n)
+    skew     <- as.character(setting$skew)
+    ncat     <- as.character(setting$ncat)
+    model.id <- as.integer(setting$model.id)
+    model    <- models[[model.id]]
+
+    print_sep()
+    cat(sprintf(
+      "Re-estimation %d/%d: id=%i, seed=%i, n=%i, skew=%s, ncat=%s, model.id=%i\n",
+      k, NROW(settings), id, seed, n.i, skew, ncat, model.id
+    ))
+    print_sep()
+
+    set.seed(seed)
+    thr <- list_thresholds[[skew]][[ncat]]
+    data_i <- sim_ord_data(syntax = model, thr = thr, n = n.i)
+    ordered <- colnames(data_i)
+
+    results <- run_estimators(
+      methods  = methods,
+      data_i   = data_i,
+      ordered  = ordered,
+      model    = model,
+      id       = id,
+      n.i      = n.i,
+      skew     = skew,
+      ncat     = ncat,
+      model.id = model.id,
+      seed     = seed
+    )
+
+    new_list[[k]] <- do.call(rbind, unname(results))
+    print(plssem:::plssemParTable(new_list[[k]]))
+  }
+
+  updated <- replace_reestimated_rows(old, do.call(rbind, new_list), methods)
+  write.csv(updated, path)
+  message(sprintf("Updated %s", path))
+
+  invisible(updated)
+}
+
+
 # ──────────────────────────────────────────────────────────────────────────────
 # Run Simulation
 # ──────────────────────────────────────────────────────────────────────────────
-checkIfExists <- TRUE
-R             <- 200L
 K             <- NROW(IDX)
 total         <- R * K
-run.id        <- NULL
 
 
 # ── Parallelisation ───────────────────────────────────────────────────────────
@@ -197,8 +408,6 @@ run.id        <- NULL
 # independent: it derives its iteration ids from `i`, sets its own per-iteration
 # seeds, and writes its own results CSV. The batches can therefore run in any
 # order / in parallel and still reproduce the sequential output exactly.
-parallel  <- TRUE
-n.workers <- 4
 
 # The run.id specifies the circumstance the script is running under
 # v0-test is for testing. The other run.ids (see below) specify
@@ -210,6 +419,24 @@ LOCAL_SEEDS <- c(
   "v0-vivo" = 9144416,
   "v0-tuf"  = 1210967
 )
+
+if (reestimate) {
+  if (!length(reestimate.files)) {
+    stop(
+      "Set reestimate.files to one or more existing results CSVs.",
+      call. = FALSE
+    )
+  }
+
+  reestimate.methods <- match.arg(
+    reestimate.methods,
+    choices = c("MC-OrdPLSc", "PLSc", "PLS", "Mplus"),
+    several.ok = TRUE
+  )
+
+  results <- lapply(reestimate.files, reestimate_file, methods = reestimate.methods)
+
+} else {
 
 if (is.null(run.id)) {
   cat("What run.id do you want to use? Available:\n")
@@ -274,70 +501,17 @@ run_batch <- function(i) {
     cat(sprintf("Iteration %d/%d:\n", id, total))
     print_sep()
 
-    results.ij <- list(
-      mcpls = get_output(
-        func      = est_pls,
-        data      = data_i,
-        ordered   = ordered,
-        bootstrap = TRUE,
-        boot.R    = 500,
-        model     = model,
-        method    = "MC-OrdPLSc",
-        id        = id,
-        n         = n.i,
-        skew      = skew,
-        ncat      = ncat,
-        model.id  = idx.modj,
-        seed      = seeds[id]
-      ),
-
-      plsc = get_output(
-        func       = est_pls,
-        data       = data_i,
-        bootstrap  = TRUE,
-        boot.R     = 500,
-        model      = model,
-        method     = "PLSc",
-        consistent = TRUE,
-        n          = n.i,
-        id         = id,
-        skew       = skew,
-        ncat       = ncat,
-        model.id   = idx.modj,
-        seed       = seeds[id]
-      ),
-
-      pls = get_output(
-        func       = est_pls,
-        data       = data_i,
-        model      = model,
-        bootstrap  = TRUE,
-        boot.R     = 500,
-        method     = "PLS",
-        consistent = FALSE,
-        n          = n.i,
-        id         = id,
-        skew       = skew,
-        ncat       = ncat,
-        model.id   = idx.modj,
-        seed       = seeds[id]
-      ),
-
-      mplus = get_output(
-        func        = est_mplus,
-        data        = data_i,
-        model       = model,
-        cleanup     = TRUE,
-        method      = "Mplus",
-        processors  = 2,
-        categorical = ordered,
-        n           = n.i,
-        id          = id,
-        skew        = skew,
-        ncat        = ncat,
-        model.id    = idx.modj,
-        seed        = seeds[id]
-      )
+    results.ij <- run_estimators(
+      methods  = c("MC-OrdPLSc", "PLSc", "PLS", "Mplus"),
+      data_i   = data_i,
+      ordered  = ordered,
+      model    = model,
+      id       = id,
+      n.i      = n.i,
+      skew     = skew,
+      ncat     = ncat,
+      model.id = idx.modj,
+      seed     = seeds[id]
     )
 
     print(plssem:::plssemParTable(do.call(rbind, unname(results.ij))))
@@ -383,3 +557,5 @@ if (parallel) {
 
 # Each batch already wrote its own CSV; this is just the in-memory aggregate.
 results <- do.call(rbind, results_list)
+
+}
