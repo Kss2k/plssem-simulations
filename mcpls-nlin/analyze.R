@@ -165,11 +165,11 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
 
     filter(
       df,
-      admissible.se & par == param[[1]] & n == n.i & loadings == loadings.i
+      par == param[[1]] & n == n.i & loadings == loadings.i
     ) |>
       group_by(method, ncat, skew, par) |>
       summarize(
-        se = mean(se, na.rm = TRUE),
+        se = mean(se[admissible.se], na.rm = TRUE),
         sd = sd(est, na.rm = TRUE),
         ratio = se / sd,
         .groups = "drop"
@@ -193,8 +193,11 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
         scales = "fixed",
         labeller = label_parsed
       ) +
-      #ylim(-1, 3) +
-      ylim(-1, 5) +
+      ylim(0.8, 1.6) +
+      annotate("rect",
+        xmin = -Inf, xmax = Inf, ymin = 0.9, ymax = 1.1, 
+        fill = "grey", alpha = 0.4
+      ) +
       ggtitle(sprintf("n = %i, loadings = %.1f", n.i, loadings.i)) +
       ylab("SE/SD") +
       xlab("Categories") +
@@ -208,11 +211,11 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
 
     filter(
       df,
-      admissible.se & par == param[[1]] & n == n.i & loadings == loadings.i
+      par == param[[1]] & n == n.i & loadings == loadings.i
     ) |>
       group_by(method, ncat, skew, par) |>
       summarize(
-        se = mean(se, na.rm = TRUE),
+        se = mean(se[admissible.se], na.rm = TRUE),
         sd = sd(est, na.rm = TRUE),
         .groups = "drop"
       ) |>
@@ -291,7 +294,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
   plots_inadmissible[[i]] <- pinadmissible
 })
 
-target.n <- 200
+target.n <- 500
 target.l <- 0.5
 idx <- which(simsplit$n == target.n & simsplit$loadings == target.l)
 print(plots_inadmissible[[idx]])
