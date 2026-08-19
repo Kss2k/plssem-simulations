@@ -34,6 +34,8 @@ n.workers <- 4
 # Model+Parameters
 # ──────────────────────────────────────────────────────────────────────────────
 
+# Formula for composite reliability:
+#   sum(std.lambda)^2 / (sum(std.lambda)^2 + sum(1 - std.lambda^2))
 models <- c(
   # loadings based on Schuberth et al., 2018
   'X =~ 0.4 * x1 + 0.8 * x2 + 0.8 * x3
