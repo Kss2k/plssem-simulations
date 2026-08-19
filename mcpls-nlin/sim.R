@@ -27,7 +27,7 @@ checkIfExists <- TRUE
 R             <- 200L
 run.id        <- NULL
 
-parallel  <- FALSE
+parallel  <- TRUE
 n.workers <- 4
 
 # ──────────────────────────────────────────────────────────────────────────────
