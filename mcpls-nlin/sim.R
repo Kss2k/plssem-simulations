@@ -35,14 +35,21 @@ n.workers <- 4
 # ──────────────────────────────────────────────────────────────────────────────
 
 # Formula for composite reliability:
-#   sum(std.lambda)^2 / (sum(std.lambda)^2 + sum(1 - std.lambda^2))
+cr <- function(...) (sum(c(...))^2)/(sum(c(...))^2 + sum(1-c(...)^2))
+cr(0.4, 0.8, 0.8)
+#> [1] 0.7194245
+cr(0.6, 0.6, 0.8)
+#> [1] 0.7092199
+cr(0.4, 0.7, 0.9)
+#> [1] 0.7220217
+
 models <- c(
-  # loadings based on Schuberth et al., 2018
+  # loadings targeting cr slightly above 0.7
   'X =~ 0.4 * x1 + 0.8 * x2 + 0.8 * x3
-   Z =~ 0.725 * z1 + 0.68 * z2 + 0.74 * z3
-   Y =~ 0.5 * y1 + 0.7 * y2 + 0.9 * y3
+   Z =~ 0.6 * z1 + 0.6 * z2 + 0.8 * z3
+   Y =~ 0.4 * y1 + 0.7 * y2 + 0.9 * y3
    Y  ~ 0.4 *  X + 0.5 *  Z + 0.3 * X:Z
-   X ~~ 0.2 * Z',
+   X ~~ 0.2 *  Z',
   # reliability 0.9^2, 3 indicators
   'X =~ 0.9 * x1 + 0.9 * x2 + 0.9 * x3
    Z =~ 0.9 * z1 + 0.9 * z2 + 0.9 * z3
