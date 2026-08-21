@@ -7,9 +7,12 @@ library(ggplot2)
 library(patchwork)
 library(scales)
 
+testfiles <- FALSE  
 rdir <- "mcpls-nlin/results/"
 files <- dir(rdir)
 files <- files[endsWith(files, ".csv")]
+if (!testfiles) files <- files[!startsWith(files, "results-v0-test")]
+
 paths <- paste0(rdir, files)
 ids   <- abbreviate(files, 6)
 
@@ -21,11 +24,6 @@ read <- function(path) {
   df
 }
 
-
-getModelLoading <- function(par, true) {
-  idx <- which.max(par == "X=~x1")
-  true[[idx]]
-}
 
 methods_ordered <- c("PLS", "PLSc", "MC-OrdPLSc", "Mplus")
 
@@ -40,7 +38,6 @@ df <- do.call(rbind, lapply(paths, read)) |>
   group_by(id, method) |>
   mutate(
     parcombo = paste0(paste0(par, "=", true), collapse = ","),
-    loadings = getModelLoading(par, true),
     admissible.se = all(admissible) & !any(is.na(se) | se > 1) # check SEs when checking admissiblity
   )
 
@@ -48,7 +45,7 @@ df <- do.call(rbind, lapply(paths, read)) |>
 # Within each we look at the performance
 simsplit <- expand.grid(
   n = sort(unique(df$n)),
-  loadings = sort(unique(df$loadings))
+  model.id = sort(unique(df$model.id))
 )
 
 par2tex <- list(
@@ -61,9 +58,9 @@ par2tex <- list(
 )
 
 # Count inadmissibles
-admissible <- group_by(df, id, method, loadings, ncat, skew, n) |> 
+admissible <- group_by(df, id, method, model.id, ncat, skew, n) |> 
   summarize(admissible = unique(admissible)) |>
-  group_by(method, loadings, ncat, skew, n) |> 
+  group_by(method, model.id, ncat, skew, n) |> 
   summarize(nruns = length(admissible),
             ninadmissible = sum(!admissible),
             pinadmissible = sum(!admissible)/length(admissible))
@@ -93,7 +90,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
   # ----------------------------------------------------------------------------
 
   n.i <- simsplit$n[[i]]
-  loadings.i <- simsplit$loadings[[i]]
+  model.i <- simsplit$model.id[[i]]
 
   # ----------------------------------------------------------------------------
   # Inadmissible Solutions
@@ -101,13 +98,13 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
 
   dodge <- position_dodge(width = 0.9)
   pinadmissible <- admissible |>
-    filter(n == n.i, loadings == loadings.i) |>
+    filter(n == n.i, model.id == model.i) |>
     ggplot(aes(x = ncat, y = pinadmissible, colour = method, fill = method)) +
     geom_col(alpha = 0.2, position = dodge) +
     facet_grid(rows = vars(skew), scales = "fixed") +
     coord_cartesian(ylim = c(0, 1)) +
     scale_y_continuous(labels = scales::label_percent(accuracy = 1)) +
-    ggtitle(sprintf("Percentage inadmissible solutions (n=%i) (lambda=%.1f)", n.i, loadings.i)) +
+    ggtitle(sprintf("Percentage inadmissible solutions (n=%i) model %d", n.i, model.i)) +
     ylab("Percentage inadmissible solutions") +
     xlab("Categories") +
     theme_bw()
@@ -120,7 +117,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
   plot_bias <- function(param = "Y~X:Z", ci.width = 1) {
   
     filter(df,
-      admissible & par == param[[1]] & n == n.i & loadings == loadings.i
+      admissible & par == param[[1]] & n == n.i & model.id == model.i 
     ) |>
     group_by(
       method, ncat, skew, par
@@ -151,7 +148,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
       scales = "fixed",
       labeller = label_parsed
     ) +
-    ggtitle(sprintf("n = %i, loadings = %.1f", n.i, loadings.i)) +
+    ggtitle(sprintf("n = %i, model = %i", n.i, model.i)) +
     ylab("Bias") +
     xlab("Categories") +
     theme_bw()
@@ -165,7 +162,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
 
     filter(
       df,
-      par == param[[1]] & n == n.i & loadings == loadings.i
+      par == param[[1]] & n == n.i & model.id == model.i 
     ) |>
       group_by(method, ncat, skew, par) |>
       summarize(
@@ -198,7 +195,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
         xmin = -Inf, xmax = Inf, ymin = 0.9, ymax = 1.1, 
         fill = "grey", alpha = 0.4
       ) +
-      ggtitle(sprintf("n = %i, loadings = %.1f", n.i, loadings.i)) +
+      ggtitle(sprintf("n = %i, model = %i", n.i, model.i)) +
       ylab("SE/SD") +
       xlab("Categories") +
       theme_bw()
@@ -211,7 +208,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
 
     filter(
       df,
-      par == param[[1]] & n == n.i & loadings == loadings.i
+      par == param[[1]] & n == n.i & model.id == model.i 
     ) |>
       group_by(method, ncat, skew, par) |>
       summarize(
@@ -244,7 +241,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
         scales = "fixed",
         labeller = label_parsed
       ) +
-      ggtitle(sprintf("n = %i, loadings = %.1f", n.i, loadings.i)) +
+      ggtitle(sprintf("n = %i, model = %i", n.i, model.i)) +
       ylab("SE/SD") +
       xlab("Categories") +
       theme_bw()
@@ -256,7 +253,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
 
   dodge <- position_dodge(width = 0.9)
   timeplot <-  
-    filter(df, admissible & n == n.i & loadings == loadings.i) |>
+    filter(df, admissible & n == n.i & model.id == model.i) |>
     group_by(method, ncat, skew) |>
     summarize(mean_time = mean(time, na.rm = TRUE)) |>
     mutate(ncat = as.factor(ncat)) |>
@@ -271,7 +268,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
       rows = vars(skew),
       scales = "fixed"
     ) +
-    ggtitle(sprintf("n = %i, loadings = %.1f", n.i, loadings.i)) +
+    ggtitle(sprintf("n = %i, model = %i", n.i, model.i)) +
     ylab("Mean Computation Time (seconds)") +
     xlab("Categories") +
     theme_bw()
@@ -294,9 +291,9 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
   plots_inadmissible[[i]] <- pinadmissible
 })
 
-target.n <- 500
-target.l <- 0.5
-idx <- which(simsplit$n == target.n & simsplit$loadings == target.l)
+target.n <- 300
+target.id <- 1 # currently we only have 1 model in our simulation anyways
+idx <- which(simsplit$n == target.n & simsplit$model.id == target.id)
 print(plots_inadmissible[[idx]])
 print(plots_time[[idx]])
 print(plots_bias_l1[[idx]])
