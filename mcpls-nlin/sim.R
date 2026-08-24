@@ -28,7 +28,7 @@ R             <- 200L
 run.id        <- NULL
 
 parallel  <- TRUE
-n.workers <- 4
+n.workers <- 6
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Model+Parameters
@@ -430,9 +430,10 @@ total         <- R * K
 # need different seeds, to generate unique results.
 
 LOCAL_SEEDS <- c(
-  "v1-test" = 5340956,
-  "v1-vivo" = 9144416,
-  "v1-tuf"  = 1210967
+  "v1-test"   = 5340956,
+  "v1-vivo"   = 9144416,
+  "v1-tuf"    = 1210967,
+  "v1-promax" = 2983429
 )
 
 if (reestimate) {
