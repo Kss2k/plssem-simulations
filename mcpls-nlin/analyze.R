@@ -7,11 +7,11 @@ library(ggplot2)
 library(patchwork)
 library(scales)
 
-testfiles <- FALSE  
+testfiles <- TRUE
 rdir <- "mcpls-nlin/results/"
 files <- dir(rdir)
 files <- files[endsWith(files, ".csv")]
-if (!testfiles) files <- files[!startsWith(files, "results-v0-test")]
+if (!testfiles) files <- files[!grepl("test", files) & !grepl("extra", files)]
 
 paths <- paste0(rdir, files)
 ids   <- abbreviate(files, 6)
@@ -72,13 +72,15 @@ EMPTY_LIST <- vector("list", NROW(simsplit))
 
 plots_inadmissible   <- EMPTY_LIST
 plots_time           <- EMPTY_LIST
-plots_bias_l1        <- EMPTY_LIST
+plots_bias_l1_l2     <- EMPTY_LIST
 plots_bias_b1        <- EMPTY_LIST
+plots_bias_b1_b2     <- EMPTY_LIST
 plots_bias_b2        <- EMPTY_LIST
 plots_bias_b3        <- EMPTY_LIST
 plots_se_sd_ratio_b1 <- EMPTY_LIST
 plots_se_sd_ratio_b2 <- EMPTY_LIST
 plots_se_sd_ratio_b3 <- EMPTY_LIST
+plots_se_sd_ratio_b1_b2 <- EMPTY_LIST
 plots_se_sd_b1       <- EMPTY_LIST
 plots_se_sd_b2       <- EMPTY_LIST
 plots_se_sd_b3       <- EMPTY_LIST
@@ -117,7 +119,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
   plot_bias <- function(param = "Y~X:Z", ci.width = 1) {
   
     filter(df,
-      admissible & par == param[[1]] & n == n.i & model.id == model.i 
+      admissible & par %in% param & n == n.i & model.id == model.i 
     ) |>
     group_by(
       method, ncat, skew, par
@@ -148,7 +150,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
       scales = "fixed",
       labeller = label_parsed
     ) +
-    ggtitle(sprintf("n = %i, model = %i", n.i, model.i)) +
+    # ggtitle(sprintf("n = %i, model = %i", n.i, model.i)) +
     ylab("Bias") +
     xlab("Categories") +
     theme_bw()
@@ -162,7 +164,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
 
     filter(
       df,
-      par == param[[1]] & n == n.i & model.id == model.i 
+      par %in% param & n == n.i & model.id == model.i 
     ) |>
       group_by(method, ncat, skew, par) |>
       summarize(
@@ -278,11 +280,12 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
   # ----------------------------------------------------------------------------
  
   plots_time[[i]] <- timeplot
-  plots_bias_l1[[i]] <- plot_bias("Y=~y1")
+  plots_bias_l1_l2[[i]] <- plot_bias(c("Y=~y1", "Y=~y2"))
   plots_bias_b1[[i]] <- plot_bias("Y~X")
   plots_bias_b2[[i]] <- plot_bias("Y~Z")
+  plots_bias_b1_b2[[i]] <- plot_bias(c("Y~X", "Y~Z"))
   plots_bias_b3[[i]] <- plot_bias("Y~X:Z")
-  plots_se_sd_ratio_b1[[i]] <- plot_se_sd_ratio("Y~X")
+  plots_se_sd_ratio_b1_b2[[i]] <- plot_se_sd_ratio(c("Y~X", "Y~Z"))
   plots_se_sd_ratio_b2[[i]] <- plot_se_sd_ratio("Y~Z")
   plots_se_sd_ratio_b3[[i]] <- plot_se_sd_ratio("Y~X:Z")
   plots_se_sd_b1[[i]] <- plot_se_sd("Y~X")
@@ -294,15 +297,18 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
 target.n <- 300
 target.id <- 1 # currently we only have 1 model in our simulation anyways
 idx <- which(simsplit$n == target.n & simsplit$model.id == target.id)
-print(plots_inadmissible[[idx]])
-print(plots_time[[idx]])
-print(plots_bias_l1[[idx]])
-print(plots_bias_b1[[idx]])
-print(plots_bias_b2[[idx]])
-print(plots_bias_b3[[idx]])
-print(plots_se_sd_ratio_b1[[idx]])
-print(plots_se_sd_ratio_b2[[idx]])
-print(plots_se_sd_ratio_b3[[idx]])
-print(plots_se_sd_b1[[idx]])
-print(plots_se_sd_b2[[idx]])
-print(plots_se_sd_b3[[idx]])
+
+if (FALSE) {
+  print(plots_inadmissible[[idx]])
+  print(plots_time[[idx]])
+  print(plots_bias_l1_l2[[idx]])
+  print(plots_bias_b1[[idx]])
+  print(plots_bias_b2[[idx]])
+  print(plots_bias_b3[[idx]])
+  print(plots_se_sd_ratio_b1[[idx]])
+  print(plots_se_sd_ratio_b2[[idx]])
+  print(plots_se_sd_ratio_b3[[idx]])
+  print(plots_se_sd_b1[[idx]])
+  print(plots_se_sd_b2[[idx]])
+  print(plots_se_sd_b3[[idx]])
+}
