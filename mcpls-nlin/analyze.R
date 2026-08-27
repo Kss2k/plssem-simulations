@@ -45,7 +45,8 @@ df <- do.call(rbind, lapply(paths, read)) |>
 # Within each we look at the performance
 simsplit <- expand.grid(
   n = sort(unique(df$n)),
-  model.id = sort(unique(df$model.id))
+  model.id = sort(unique(df$model.id)),
+  drop.inadmissible = c(TRUE, FALSE)
 )
 
 par2tex <- list(
@@ -70,20 +71,20 @@ print(admissible, n = 500)
 
 EMPTY_LIST <- vector("list", NROW(simsplit))
 
-plots_inadmissible   <- EMPTY_LIST
-plots_time           <- EMPTY_LIST
-plots_bias_l1_l2     <- EMPTY_LIST
-plots_bias_b1        <- EMPTY_LIST
-plots_bias_b1_b2     <- EMPTY_LIST
-plots_bias_b2        <- EMPTY_LIST
-plots_bias_b3        <- EMPTY_LIST
-plots_se_sd_ratio_b1 <- EMPTY_LIST
-plots_se_sd_ratio_b2 <- EMPTY_LIST
-plots_se_sd_ratio_b3 <- EMPTY_LIST
+plots_inadmissible      <- EMPTY_LIST
+plots_time              <- EMPTY_LIST
+plots_bias_l1_l2        <- EMPTY_LIST
+plots_bias_b1           <- EMPTY_LIST
+plots_bias_b1_b2        <- EMPTY_LIST
+plots_bias_b2           <- EMPTY_LIST
+plots_bias_b3           <- EMPTY_LIST
+plots_se_sd_ratio_b1    <- EMPTY_LIST
+plots_se_sd_ratio_b2    <- EMPTY_LIST
+plots_se_sd_ratio_b3    <- EMPTY_LIST
 plots_se_sd_ratio_b1_b2 <- EMPTY_LIST
-plots_se_sd_b1       <- EMPTY_LIST
-plots_se_sd_b2       <- EMPTY_LIST
-plots_se_sd_b3       <- EMPTY_LIST
+plots_se_sd_b1          <- EMPTY_LIST
+plots_se_sd_b2          <- EMPTY_LIST
+plots_se_sd_b3          <- EMPTY_LIST
 
 for (i in seq_len(NROW(simsplit))) suppressMessages({
   cat(sprintf("%i...\n", i))
@@ -93,6 +94,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
 
   n.i <- simsplit$n[[i]]
   model.i <- simsplit$model.id[[i]]
+  drop.inadmissible <- simsplit$drop.inadmissible[[i]]
 
   # ----------------------------------------------------------------------------
   # Inadmissible Solutions
@@ -111,6 +113,21 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
     xlab("Categories") +
     theme_bw()
 
+  if (drop.inadmissible) {
+    ids.is.admissible <- group_by(df, id) |>
+      summarize(admissible = all(admissible))
+    inadmissible.ids <- ids.is.admissible[
+      !ids.is.admissible$admissible, "id", drop = TRUE
+    ]
+
+    df$inadmissible.id <- df$id %in% inadmissible.ids
+    E <- mean
+
+  } else {
+    df$inadmissible.id <- df$id %in% FALSE
+    E <- median
+  }
+
   # ----------------------------------------------------------------------------
   # Bias Plots
   # ----------------------------------------------------------------------------
@@ -119,13 +136,14 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
   plot_bias <- function(param = "Y~X:Z", ci.width = 1) {
   
     filter(df,
-      admissible & par %in% param & n == n.i & model.id == model.i 
+      !inadmissible.id &
+      par %in% param & n == n.i & model.id == model.i 
     ) |>
     group_by(
       method, ncat, skew, par
     ) |>
     summarize(
-        bias       = mean(bias, na.rm = TRUE),
+        bias       = E(bias, na.rm = TRUE),
         se         = sd(est, na.rm = TRUE),
         bias.lower = bias - ci.width * se,
         bias.upper = bias + ci.width * se
@@ -164,6 +182,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
 
     filter(
       df,
+      !inadmissible.id &
       par %in% param & n == n.i & model.id == model.i 
     ) |>
       group_by(method, ncat, skew, par) |>
@@ -210,6 +229,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
 
     filter(
       df,
+      !inadmissible.id &
       par == param[[1]] & n == n.i & model.id == model.i 
     ) |>
       group_by(method, ncat, skew, par) |>
@@ -255,7 +275,10 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
 
   dodge <- position_dodge(width = 0.9)
   timeplot <-  
-    filter(df, admissible & n == n.i & model.id == model.i) |>
+    filter(df,
+      !inadmissible.id &
+      n == n.i & model.id == model.i
+    ) |>
     group_by(method, ncat, skew) |>
     summarize(mean_time = mean(time, na.rm = TRUE)) |>
     mutate(ncat = as.factor(ncat)) |>
