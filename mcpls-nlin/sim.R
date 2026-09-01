@@ -476,7 +476,7 @@ run_batch <- function(i) {
   filePrefix <- paste("results", run.id, i, sep = "-")
 
   files <- dir(RESULTS_DIR)
-  match <- startsWith(files, filePrefix)
+  match <- startsWith(files, paste0(filePrefix, "-"))
 
   if (checkIfExists && any(match)) {
     message(sprintf(
