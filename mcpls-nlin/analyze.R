@@ -106,12 +106,13 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
     ggplot(aes(x = ncat, y = pinadmissible, colour = method, fill = method)) +
     geom_col(alpha = 0.2, position = dodge) +
     facet_grid(rows = vars(skew), scales = "fixed") +
-    coord_cartesian(ylim = c(0, 1)) +
+    # coord_cartesian(ylim = c(0, 1)) +
     scale_y_continuous(labels = scales::label_percent(accuracy = 1)) +
     ggtitle(sprintf("Percentage inadmissible solutions (n=%i) model %d", n.i, model.i)) +
     ylab("Percentage inadmissible solutions") +
     xlab("Categories") +
     theme_bw()
+
 
   if (drop.inadmissible) {
     ids.is.admissible <- group_by(df, id) |>
