@@ -14,7 +14,11 @@ files <- files[endsWith(files, ".csv")]
 if (!testfiles) files <- files[!grepl("test", files) & !grepl("extra", files)]
 
 paths <- paste0(rdir, files)
-ids   <- abbreviate(files, 6)
+ids   <- stats::setNames(paste(
+  stringr::str_extract(files, "v1-tuf|v1-vivo|v1-extra"),
+  stringr::str_extract(files, "(v1-tuf|v1-vivo|v1-extra-n300-ncat2)\\-+([0-9]+)", group = 2),
+  sep = "-"
+), nm = files)
 
 read <- function(path) {
   name <- last(stringr::str_split_1(path, "/"))
@@ -136,7 +140,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
   dodge <- position_dodge(width = 0.9)
   plot_bias <- function(param = "Y~X:Z", ci.width = 1) {
   
-    filter(df,
+    tbl <- filter(df,
       !inadmissible.id &
       par %in% param & n == n.i & model.id == model.i 
     ) |>
@@ -152,8 +156,9 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
     mutate(
       ncat = as.factor(ncat),
       par  = sapply(par, \(p) par2tex[[p]])
-    ) |>
-    ggplot(aes(
+    )
+
+    plot <- ggplot(tbl, aes(
       x = ncat,
       y = bias,
       colour = method,
@@ -173,6 +178,13 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
     ylab("Bias") +
     xlab("Categories") +
     theme_bw()
+
+    min.y <- -0.5
+    max.y <- 0.25
+    if (any(tbl$bias.lower < min.y) || any(tbl$bias.upper > max.y))
+      plot <- plot + coord_cartesian(ylim = c(min.y, max.y))
+
+    plot
   }
 
 
@@ -278,7 +290,8 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
   timeplot <-  
     filter(df,
       !inadmissible.id &
-      n == n.i & model.id == model.i
+      n == n.i & model.id == model.i &
+      grepl("v1-tuf", id)
     ) |>
     group_by(method, ncat, skew) |>
     summarize(mean_time = mean(time, na.rm = TRUE)) |>
