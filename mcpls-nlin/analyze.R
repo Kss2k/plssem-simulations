@@ -7,11 +7,18 @@ library(ggplot2)
 library(patchwork)
 library(scales)
 
+testfiles <- FALSE
 rdir <- "mcpls-nlin/results/"
 files <- dir(rdir)
 files <- files[endsWith(files, ".csv")]
+if (!testfiles) files <- files[!grepl("test", files) & !grepl("extra", files)]
+
 paths <- paste0(rdir, files)
-ids   <- abbreviate(files, 6)
+ids   <- stats::setNames(paste(
+  stringr::str_extract(files, "v1-tuf|v1-vivo|v1-extra"),
+  stringr::str_extract(files, "(v1-tuf|v1-vivo|v1-extra-n300-ncat2)\\-+([0-9]+)", group = 2),
+  sep = "-"
+), nm = files)
 
 read <- function(path) {
   name <- last(stringr::str_split_1(path, "/"))
@@ -21,11 +28,6 @@ read <- function(path) {
   df
 }
 
-
-getModelLoading <- function(par, true) {
-  idx <- which.max(par == "X=~x1")
-  true[[idx]]
-}
 
 methods_ordered <- c("PLS", "PLSc", "MC-OrdPLSc", "Mplus")
 
@@ -40,7 +42,6 @@ df <- do.call(rbind, lapply(paths, read)) |>
   group_by(id, method) |>
   mutate(
     parcombo = paste0(paste0(par, "=", true), collapse = ","),
-    loadings = getModelLoading(par, true),
     admissible.se = all(admissible) & !any(is.na(se) | se > 1) # check SEs when checking admissiblity
   )
 
@@ -48,7 +49,8 @@ df <- do.call(rbind, lapply(paths, read)) |>
 # Within each we look at the performance
 simsplit <- expand.grid(
   n = sort(unique(df$n)),
-  loadings = sort(unique(df$loadings))
+  model.id = sort(unique(df$model.id)),
+  drop.inadmissible = c(TRUE, FALSE)
 )
 
 par2tex <- list(
@@ -61,9 +63,9 @@ par2tex <- list(
 )
 
 # Count inadmissibles
-admissible <- group_by(df, id, method, loadings, ncat, skew, n) |> 
+admissible <- group_by(df, id, method, model.id, ncat, skew, n) |> 
   summarize(admissible = unique(admissible)) |>
-  group_by(method, loadings, ncat, skew, n) |> 
+  group_by(method, model.id, ncat, skew, n) |> 
   summarize(nruns = length(admissible),
             ninadmissible = sum(!admissible),
             pinadmissible = sum(!admissible)/length(admissible))
@@ -73,18 +75,20 @@ print(admissible, n = 500)
 
 EMPTY_LIST <- vector("list", NROW(simsplit))
 
-plots_inadmissible   <- EMPTY_LIST
-plots_time           <- EMPTY_LIST
-plots_bias_l1        <- EMPTY_LIST
-plots_bias_b1        <- EMPTY_LIST
-plots_bias_b2        <- EMPTY_LIST
-plots_bias_b3        <- EMPTY_LIST
-plots_se_sd_ratio_b1 <- EMPTY_LIST
-plots_se_sd_ratio_b2 <- EMPTY_LIST
-plots_se_sd_ratio_b3 <- EMPTY_LIST
-plots_se_sd_b1       <- EMPTY_LIST
-plots_se_sd_b2       <- EMPTY_LIST
-plots_se_sd_b3       <- EMPTY_LIST
+plots_inadmissible      <- EMPTY_LIST
+plots_time              <- EMPTY_LIST
+plots_bias_l1_l2        <- EMPTY_LIST
+plots_bias_b1           <- EMPTY_LIST
+plots_bias_b1_b2        <- EMPTY_LIST
+plots_bias_b2           <- EMPTY_LIST
+plots_bias_b3           <- EMPTY_LIST
+plots_se_sd_ratio_b1    <- EMPTY_LIST
+plots_se_sd_ratio_b2    <- EMPTY_LIST
+plots_se_sd_ratio_b3    <- EMPTY_LIST
+plots_se_sd_ratio_b1_b2 <- EMPTY_LIST
+plots_se_sd_b1          <- EMPTY_LIST
+plots_se_sd_b2          <- EMPTY_LIST
+plots_se_sd_b3          <- EMPTY_LIST
 
 for (i in seq_len(NROW(simsplit))) suppressMessages({
   cat(sprintf("%i...\n", i))
@@ -93,7 +97,8 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
   # ----------------------------------------------------------------------------
 
   n.i <- simsplit$n[[i]]
-  loadings.i <- simsplit$loadings[[i]]
+  model.i <- simsplit$model.id[[i]]
+  drop.inadmissible <- simsplit$drop.inadmissible[[i]]
 
   # ----------------------------------------------------------------------------
   # Inadmissible Solutions
@@ -101,16 +106,32 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
 
   dodge <- position_dodge(width = 0.9)
   pinadmissible <- admissible |>
-    filter(n == n.i, loadings == loadings.i) |>
+    filter(n == n.i, model.id == model.i) |>
     ggplot(aes(x = ncat, y = pinadmissible, colour = method, fill = method)) +
     geom_col(alpha = 0.2, position = dodge) +
     facet_grid(rows = vars(skew), scales = "fixed") +
-    coord_cartesian(ylim = c(0, 1)) +
+    # coord_cartesian(ylim = c(0, 1)) +
     scale_y_continuous(labels = scales::label_percent(accuracy = 1)) +
-    ggtitle(sprintf("Percentage inadmissible solutions (n=%i) (lambda=%.1f)", n.i, loadings.i)) +
+    ggtitle(sprintf("Percentage inadmissible solutions (n=%i) model %d", n.i, model.i)) +
     ylab("Percentage inadmissible solutions") +
     xlab("Categories") +
     theme_bw()
+
+
+  if (drop.inadmissible) {
+    ids.is.admissible <- group_by(df, id) |>
+      summarize(admissible = all(admissible))
+    inadmissible.ids <- ids.is.admissible[
+      !ids.is.admissible$admissible, "id", drop = TRUE
+    ]
+
+    df$inadmissible.id <- df$id %in% inadmissible.ids
+    E <- mean
+
+  } else {
+    df$inadmissible.id <- df$id %in% FALSE
+    E <- median
+  }
 
   # ----------------------------------------------------------------------------
   # Bias Plots
@@ -119,14 +140,15 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
   dodge <- position_dodge(width = 0.9)
   plot_bias <- function(param = "Y~X:Z", ci.width = 1) {
   
-    filter(df,
-      admissible & par == param[[1]] & n == n.i & loadings == loadings.i
+    tbl <- filter(df,
+      !inadmissible.id &
+      par %in% param & n == n.i & model.id == model.i 
     ) |>
     group_by(
       method, ncat, skew, par
     ) |>
     summarize(
-        bias       = mean(bias, na.rm = TRUE),
+        bias       = E(bias, na.rm = TRUE),
         se         = sd(est, na.rm = TRUE),
         bias.lower = bias - ci.width * se,
         bias.upper = bias + ci.width * se
@@ -134,8 +156,9 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
     mutate(
       ncat = as.factor(ncat),
       par  = sapply(par, \(p) par2tex[[p]])
-    ) |>
-    ggplot(aes(
+    )
+
+    plot <- ggplot(tbl, aes(
       x = ncat,
       y = bias,
       colour = method,
@@ -151,10 +174,17 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
       scales = "fixed",
       labeller = label_parsed
     ) +
-    ggtitle(sprintf("n = %i, loadings = %.1f", n.i, loadings.i)) +
+    # ggtitle(sprintf("n = %i, model = %i", n.i, model.i)) +
     ylab("Bias") +
     xlab("Categories") +
     theme_bw()
+
+    min.y <- -0.5
+    max.y <- 0.25
+    if (any(tbl$bias.lower < min.y) || any(tbl$bias.upper > max.y))
+      plot <- plot + coord_cartesian(ylim = c(min.y, max.y))
+
+    plot
   }
 
 
@@ -165,7 +195,8 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
 
     filter(
       df,
-      par == param[[1]] & n == n.i & loadings == loadings.i
+      !inadmissible.id &
+      par %in% param & n == n.i & model.id == model.i 
     ) |>
       group_by(method, ncat, skew, par) |>
       summarize(
@@ -198,7 +229,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
         xmin = -Inf, xmax = Inf, ymin = 0.9, ymax = 1.1, 
         fill = "grey", alpha = 0.4
       ) +
-      ggtitle(sprintf("n = %i, loadings = %.1f", n.i, loadings.i)) +
+      ggtitle(sprintf("n = %i, model = %i", n.i, model.i)) +
       ylab("SE/SD") +
       xlab("Categories") +
       theme_bw()
@@ -211,7 +242,8 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
 
     filter(
       df,
-      par == param[[1]] & n == n.i & loadings == loadings.i
+      !inadmissible.id &
+      par == param[[1]] & n == n.i & model.id == model.i 
     ) |>
       group_by(method, ncat, skew, par) |>
       summarize(
@@ -244,7 +276,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
         scales = "fixed",
         labeller = label_parsed
       ) +
-      ggtitle(sprintf("n = %i, loadings = %.1f", n.i, loadings.i)) +
+      ggtitle(sprintf("n = %i, model = %i", n.i, model.i)) +
       ylab("SE/SD") +
       xlab("Categories") +
       theme_bw()
@@ -256,7 +288,11 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
 
   dodge <- position_dodge(width = 0.9)
   timeplot <-  
-    filter(df, admissible & n == n.i & loadings == loadings.i) |>
+    filter(df,
+      !inadmissible.id &
+      n == n.i & model.id == model.i &
+      grepl("v1-tuf", id)
+    ) |>
     group_by(method, ncat, skew) |>
     summarize(mean_time = mean(time, na.rm = TRUE)) |>
     mutate(ncat = as.factor(ncat)) |>
@@ -271,7 +307,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
       rows = vars(skew),
       scales = "fixed"
     ) +
-    ggtitle(sprintf("n = %i, loadings = %.1f", n.i, loadings.i)) +
+    ggtitle(sprintf("n = %i, model = %i", n.i, model.i)) +
     ylab("Mean Computation Time (seconds)") +
     xlab("Categories") +
     theme_bw()
@@ -281,11 +317,12 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
   # ----------------------------------------------------------------------------
  
   plots_time[[i]] <- timeplot
-  plots_bias_l1[[i]] <- plot_bias("Y=~y1")
+  plots_bias_l1_l2[[i]] <- plot_bias(c("Y=~y1", "Y=~y2"))
   plots_bias_b1[[i]] <- plot_bias("Y~X")
   plots_bias_b2[[i]] <- plot_bias("Y~Z")
+  plots_bias_b1_b2[[i]] <- plot_bias(c("Y~X", "Y~Z"))
   plots_bias_b3[[i]] <- plot_bias("Y~X:Z")
-  plots_se_sd_ratio_b1[[i]] <- plot_se_sd_ratio("Y~X")
+  plots_se_sd_ratio_b1_b2[[i]] <- plot_se_sd_ratio(c("Y~X", "Y~Z"))
   plots_se_sd_ratio_b2[[i]] <- plot_se_sd_ratio("Y~Z")
   plots_se_sd_ratio_b3[[i]] <- plot_se_sd_ratio("Y~X:Z")
   plots_se_sd_b1[[i]] <- plot_se_sd("Y~X")
@@ -294,18 +331,21 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
   plots_inadmissible[[i]] <- pinadmissible
 })
 
-target.n <- 500
-target.l <- 0.5
-idx <- which(simsplit$n == target.n & simsplit$loadings == target.l)
-print(plots_inadmissible[[idx]])
-print(plots_time[[idx]])
-print(plots_bias_l1[[idx]])
-print(plots_bias_b1[[idx]])
-print(plots_bias_b2[[idx]])
-print(plots_bias_b3[[idx]])
-print(plots_se_sd_ratio_b1[[idx]])
-print(plots_se_sd_ratio_b2[[idx]])
-print(plots_se_sd_ratio_b3[[idx]])
-print(plots_se_sd_b1[[idx]])
-print(plots_se_sd_b2[[idx]])
-print(plots_se_sd_b3[[idx]])
+target.n <- 300
+target.id <- 1 # currently we only have 1 model in our simulation anyways
+idx <- which(simsplit$n == target.n & simsplit$model.id == target.id)
+
+if (FALSE) {
+  print(plots_inadmissible[[idx]])
+  print(plots_time[[idx]])
+  print(plots_bias_l1_l2[[idx]])
+  print(plots_bias_b1[[idx]])
+  print(plots_bias_b2[[idx]])
+  print(plots_bias_b3[[idx]])
+  print(plots_se_sd_ratio_b1[[idx]])
+  print(plots_se_sd_ratio_b2[[idx]])
+  print(plots_se_sd_ratio_b3[[idx]])
+  print(plots_se_sd_b1[[idx]])
+  print(plots_se_sd_b2[[idx]])
+  print(plots_se_sd_b3[[idx]])
+}
