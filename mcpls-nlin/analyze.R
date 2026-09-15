@@ -7,7 +7,7 @@ library(ggplot2)
 library(patchwork)
 library(scales)
 
-testfiles <- TRUE
+testfiles <- FALSE
 rdir <- "mcpls-nlin/results/"
 files <- dir(rdir)
 files <- files[endsWith(files, ".csv")]
