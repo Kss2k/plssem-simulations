@@ -7,7 +7,7 @@ library(ggplot2)
 library(patchwork)
 library(scales)
 
-testfiles <- FALSE
+testfiles <- TRUE
 rdir <- "mcpls-nlin/results/"
 files <- dir(rdir)
 files <- files[endsWith(files, ".csv")]
@@ -29,7 +29,7 @@ read <- function(path) {
 }
 
 
-methods_ordered <- c("PLS", "PLSc", "MC-OrdPLSc", "Mplus")
+methods_ordered <- c("PLS", "PLSc", "MC-OrdPLSc", "MC-OrdPLSc-II", "Mplus")
 
 df <- do.call(rbind, lapply(paths, read)) |>
   mutate(
@@ -291,7 +291,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
     filter(df,
       !inadmissible.id &
       n == n.i & model.id == model.i &
-      grepl("v1-tuf", id)
+      grepl("v1-tuf", id) | (grepl("v1-extra|v1-test", id) & testfiles)
     ) |>
     group_by(method, ncat, skew) |>
     summarize(mean_time = mean(time, na.rm = TRUE)) |>

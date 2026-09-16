@@ -19,16 +19,16 @@ RESULTS_DIR <- normalizePath("results", mustWork = FALSE)
 
 # Run settings. Edit these before sourcing/running this script in R.
 reestimate <- FALSE
-reestimate.methods <- c("MC-OrdPLSc", "PLS")
-reestimate.files <- character()
+reestimate.methods <- c("MC-OrdPLSc-II") #, "MC-OrdPLSc-II", "PLS")
+reestimate.files <- list.files("results/", pattern = "results.*[.]csv")
 # reestimate.files <- list.files("results", pattern = "^results-v0-test.*[.]csv$", full.names = TRUE)
 
 checkIfExists <- TRUE
-R             <- 200L
+R             <- 400L
 run.id        <- NULL
 
 parallel  <- TRUE
-n.workers <- 6
+n.workers <- 9
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Model+Parameters
@@ -221,7 +221,7 @@ run_estimators <- function(methods,
                            seed) {
   methods <- match.arg(
     methods,
-    choices = c("MC-OrdPLSc", "PLSc", "PLS", "Mplus"),
+    choices = c("MC-OrdPLSc", "MC-OrdPLSc-II", "PLSc", "PLS", "Mplus"),
     several.ok = TRUE
   )
 
@@ -236,6 +236,22 @@ run_estimators <- function(methods,
         boot.R    = 500,
         model     = model,
         method    = "MC-OrdPLSc",
+        id        = id,
+        n         = n.i,
+        skew      = skew,
+        ncat      = ncat,
+        model.id  = model.id,
+        seed      = seed
+      ),
+
+      "MC-OrdPLSc-II" = get_output(
+        func      = est_pls,
+        data      = data_i,
+        ordered   = ordered,
+        bootstrap = TRUE,
+        boot.R    = 500,
+        model     = model,
+        method    = "MC-OrdPLSc-II",
         id        = id,
         n         = n.i,
         skew      = skew,
@@ -380,7 +396,7 @@ reestimate_file <- function(path, methods) {
     ))
     print_sep()
 
-    set.seed(seed)
+    set_seed(seed)
     thr <- list_thresholds[[skew]][[ncat]]
     data_i <- sim_ord_data(syntax = model, thr = thr, n = n.i)
     ordered <- colnames(data_i)
@@ -433,6 +449,7 @@ LOCAL_SEEDS <- c(
   "v1-test"   = 5340956,
   "v1-vivo"   = 9144416,
   "v1-tuf"    = 1210967,
+  "v1-extra"  = 1210967,
   "v1-promax" = 2983429
 )
 
@@ -446,7 +463,7 @@ if (reestimate) {
 
   reestimate.methods <- match.arg(
     reestimate.methods,
-    choices = c("MC-OrdPLSc", "PLSc", "PLS", "Mplus"),
+    choices = c("MC-OrdPLSc", "MC-OrdPLSc-II", "PLSc", "PLS", "Mplus"),
     several.ok = TRUE
   )
 
@@ -461,8 +478,10 @@ if (is.null(run.id)) {
   run.id <- names(LOCAL_SEEDS)[[run.id.idx]]
 }
 
-# The run.id specifies what seed we set
-set.seed(LOCAL_SEEDS[[run.id]])
+# The run.id specifies what seed we set. This draw happens in the master
+# session, which runs the default generator -- unlike the batches below,
+# which `future` runs under L'Ecuyer-CMRG.
+set_seed(LOCAL_SEEDS[[run.id]], kind = "Mersenne-Twister")
 
 # each iteration has it own seed, such that we can reproduce a specific
 # iterartion in isolation (if desired). This seed is appended to the output.
@@ -508,7 +527,7 @@ run_batch <- function(i) {
     cat(sprintf("i=%i, j=%i, id=%i, total=%i, seed = %i\n", i, j, id, total, seeds[id]))
     print_sep()
 
-    set.seed(seeds[id])
+    set_seed(seeds[id])
     thr <- list_thresholds[[skew]][[ncat]]
     data_i <- sim_ord_data(syntax = model, thr = thr, n = n.i)
     ordered <- colnames(data_i)
@@ -518,7 +537,7 @@ run_batch <- function(i) {
     print_sep()
 
     results.ij <- run_estimators(
-      methods  = c("MC-OrdPLSc", "PLSc", "PLS", "Mplus"),
+      methods  = "MC-OrdPLSc-II", # c("MC-OrdPLSc", "MC-OrdPLSc-II", "PLSc", "PLS", "Mplus"),
       data_i   = data_i,
       ordered  = ordered,
       model    = model,

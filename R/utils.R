@@ -35,6 +35,16 @@ set_project_root <- function(target = "DESCRIPTION", max.iter=100) {
 }
 
 
+set_seed <- function(seed, kind = "L'Ecuyer-CMRG") {
+  set.seed(
+    seed,
+    kind        = kind,
+    normal.kind = "Inversion",
+    sample.kind = "Rejection"
+  )
+}
+
+
 get_output <- function(func,
                        model,
                        data,
@@ -67,7 +77,7 @@ get_output <- function(func,
   )
 
   if (!is.null(seed))
-    set.seed(seed)
+    set_seed(seed)
 
   f.quiet <- purrr::quietly(func)
 
