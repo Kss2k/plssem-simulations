@@ -112,9 +112,25 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
     facet_grid(rows = vars(skew), scales = "fixed") +
     # coord_cartesian(ylim = c(0, 1)) +
     scale_y_continuous(labels = scales::label_percent(accuracy = 1)) +
-    ggtitle(sprintf("Percentage inadmissible solutions (n=%i) model %d", n.i, model.i)) +
+    # ggtitle(sprintf("Percentage inadmissible solutions (n=%i) model %d", n.i, model.i)) +
     ylab("Percentage inadmissible solutions") +
     xlab("Categories") +
+    theme_bw()
+  
+  pinadmissible2 <- 
+    admissible |> mutate(
+      ncat = as.factor(ncat),
+      pinadmissible = 100 * pinadmissible,
+      pinadmissible.scaled = (pinadmissible - max(pinadmissible))^(1/8)
+    ) |>
+    filter(n == n.i, model.id == model.i) |>
+    ggplot(aes(x = ncat, y = skew)) +
+    geom_tile(aes(fill=pinadmissible)) +
+    geom_text(aes(label=paste0(round(pinadmissible,1), "%"))) +
+    facet_wrap(~method) +
+    ylab("Percentage inadmissible solutions") +
+    xlab("Categories") +
+    scale_fill_gradient(low = "white", high = "red") +
     theme_bw()
 
 
@@ -229,7 +245,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
         xmin = -Inf, xmax = Inf, ymin = 0.9, ymax = 1.1, 
         fill = "grey", alpha = 0.4
       ) +
-      ggtitle(sprintf("n = %i, model = %i", n.i, model.i)) +
+      # ggtitle(sprintf("n = %i, model = %i", n.i, model.i)) +
       ylab("SE/SD") +
       xlab("Categories") +
       theme_bw()
@@ -276,7 +292,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
         scales = "fixed",
         labeller = label_parsed
       ) +
-      ggtitle(sprintf("n = %i, model = %i", n.i, model.i)) +
+      # ggtitle(sprintf("n = %i, model = %i", n.i, model.i)) +
       ylab("SE/SD") +
       xlab("Categories") +
       theme_bw()
@@ -307,7 +323,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
       rows = vars(skew),
       scales = "fixed"
     ) +
-    ggtitle(sprintf("n = %i, model = %i", n.i, model.i)) +
+    # ggtitle(sprintf("n = %i, model = %i", n.i, model.i)) +
     ylab("Mean Computation Time (seconds)") +
     xlab("Categories") +
     theme_bw()
@@ -331,6 +347,21 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
   plots_inadmissible[[i]] <- pinadmissible
 })
 
+dodge <- 0.25
+# A plot with computation time accross all conditions and methods
+plot_time_all <- print(
+  df |> mutate(n = as.factor(n), ncat = ncat) |>
+  group_by(method, ncat, n) |>
+  summarize(mean = mean(time), sd = sd(time), lower = mean - sd, upper = mean + sd) |>
+  mutate(ncat = ncat + dodge * as.integer(n=="1000")) |>
+  ggplot(aes(x = ncat, y = mean, colour = method, linetype = n, shape = n)) +
+  geom_line() + geom_point() +
+  geom_errorbar(aes(ymin = lower, ymax = upper)) + scale_y_log10() +
+  theme_bw() +
+  ylab("Mean Computation Time (seconds)") +
+  xlab("Categories")
+)
+
 target.n <- 300
 target.id <- 1 # currently we only have 1 model in our simulation anyways
 idx <- which(simsplit$n == target.n & simsplit$model.id == target.id)
@@ -348,4 +379,56 @@ if (FALSE) {
   print(plots_se_sd_b1[[idx]])
   print(plots_se_sd_b2[[idx]])
   print(plots_se_sd_b3[[idx]])
+}
+
+
+# ------------------------------------------------------------------------------
+# Multimodality check (reported in the Discussion)
+# ------------------------------------------------------------------------------
+# If the stochastic root-finding procedure were converging to different roots of
+# h across replicates, this would be expected to show up as multimodality in the
+# sampling distributions of the MC-OrdPLSc estimates. We therefore compute the
+# bimodality coefficient (BC) for every parameter-by-condition distribution.
+#
+# BC = (skew^2 + 1) / (kurt + 3 * (N - 1)^2 / ((N - 2) * (N - 3)))
+#
+# Values above the benchmark 5/9 ~= 0.555 (the value expected for a uniform
+# distribution) are typically interpreted as indicating bimodality; see
+# Pfister, Schwarz, Janczyk, Dale & Freeman (2013), doi:10.3389/fpsyg.2013.00700
+
+bimodality_coefficient <- function(x) {
+  x <- x[is.finite(x)]
+  N <- length(x)
+  if (N < 8) return(NA_real_)
+
+  m <- mean(x)
+  s <- sd(x)
+  if (s == 0) return(NA_real_)
+
+  skew <- sum((x - m)^3) / (N * s^3)
+  kurt <- sum((x - m)^4) / (N * s^4) - 3
+
+  (skew^2 + 1) / (kurt + 3 * (N - 1)^2 / ((N - 2) * (N - 3)))
+}
+
+bimodality <- df |>
+  filter(method == "MC-OrdPLSc", admissible, model.id == target.id) |>
+  group_by(par, n, ncat, skew) |>
+  summarize(N = length(est), BC = bimodality_coefficient(est), .groups = "drop") |>
+  filter(!is.na(BC))
+
+cat(sprintf(
+  paste0("Multimodality check (MC-OrdPLSc):\n",
+         "  conditions evaluated : %d\n",
+         "  BC > 0.555           : %d\n",
+         "  max BC               : %.3f\n",
+         "  median BC            : %.3f\n"),
+  NROW(bimodality),
+  sum(bimodality$BC > 5 / 9),
+  max(bimodality$BC),
+  median(bimodality$BC)
+))
+
+if (FALSE) {
+  print(arrange(bimodality, desc(BC)), n = 25)
 }
