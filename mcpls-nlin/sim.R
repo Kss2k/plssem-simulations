@@ -24,11 +24,11 @@ reestimate.files <- character()
 # reestimate.files <- list.files("results", pattern = "^results-v0-test.*[.]csv$", full.names = TRUE)
 
 checkIfExists <- TRUE
-R             <- 200L
+R             <- 400L
 run.id        <- NULL
 
 parallel  <- TRUE
-n.workers <- 6
+n.workers <- 8
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Model+Parameters
@@ -221,7 +221,7 @@ run_estimators <- function(methods,
                            seed) {
   methods <- match.arg(
     methods,
-    choices = c("MC-OrdPLSc", "PLSc", "PLS", "Mplus"),
+    choices = c("MC-OrdPLSc", "MC-OrdPLSc-Median", "PLSc", "PLS", "Mplus"),
     several.ok = TRUE
   )
 
@@ -236,6 +236,24 @@ run_estimators <- function(methods,
         boot.R    = 500,
         model     = model,
         method    = "MC-OrdPLSc",
+        id        = id,
+        n         = n.i,
+        skew      = skew,
+        ncat      = ncat,
+        model.id  = model.id,
+        seed      = seed
+      ),
+
+      "MC-OrdPLSc-Median" = get_output(
+        func      = est_pls,
+        data      = data_i,
+        ordered   = ordered,
+        bootstrap = TRUE,
+        boot.R    = 500,
+        model     = model,
+        method    = "MC-OrdPLSc-Median",
+	mc.small.sample = TRUE,
+	mc.small.sample.point.estimate = "median",
         id        = id,
         n         = n.i,
         skew      = skew,
@@ -429,11 +447,13 @@ total         <- R * K
 # different computers running parallel simulations. They of course
 # need different seeds, to generate unique results.
 
+RUN_ID_IDX_DEFAULT <- 5
 LOCAL_SEEDS <- c(
   "v1-test"   = 5340956,
   "v1-vivo"   = 9144416,
   "v1-tuf"    = 1210967,
-  "v1-promax" = 2983429
+  "v1-promax" = 2983429,
+  "v1-tuf-extra" = 1210967
 )
 
 if (reestimate) {
@@ -458,6 +478,7 @@ if (is.null(run.id)) {
   cat("What run.id do you want to use? Available:\n")
   print(names(LOCAL_SEEDS))
   run.id.idx <- as.integer(readLines(n=1))
+  if (!length(run.id.idx)) run.id.idx <- RUN_ID_IDX_DEFAULT
   run.id <- names(LOCAL_SEEDS)[[run.id.idx]]
 }
 
@@ -518,7 +539,7 @@ run_batch <- function(i) {
     print_sep()
 
     results.ij <- run_estimators(
-      methods  = c("MC-OrdPLSc", "PLSc", "PLS", "Mplus"),
+      methods  = c("MC-OrdPLSc-Median"), #, "PLSc", "PLS", "Mplus"),
       data_i   = data_i,
       ordered  = ordered,
       model    = model,
