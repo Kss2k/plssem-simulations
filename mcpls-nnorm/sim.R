@@ -26,7 +26,7 @@ R             <- 200L
 run.id        <- NULL
 
 parallel  <- TRUE
-n.workers <- 6
+n.workers <- 8
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Model+Parameters
@@ -410,7 +410,7 @@ run_estimators <- function(methods,
         func        = est_mplus,
         cleanup     = TRUE,
         estimator   = "mlr",
-        processors  = 2,
+        processors  = 1,
         categorical = if (is.ordinal) ordered else NULL
       ),
 
@@ -444,17 +444,21 @@ total         <- R * K
 # need different seeds, to generate unique results. These differ from the
 # mcpls-nlin seeds, so the two studies do not share draws.
 
+DEFAULT_SEED_IDX <- 5
 LOCAL_SEEDS <- c(
-  "v2-test"   = 7715284,
-  "v2-vivo"   = 3092648,
-  "v2-tuf"    = 6481073,
-  "v2-promax" = 1837520
+  "v2-test"     = 7715284,
+  "v2-vivo"     = 3092648,
+  "v2-tuf"      = 6481073,
+  "v2-promax"   = 1837520,
+  "v2-lovelace" = 2139260
 )
 
 if (is.null(run.id)) {
   cat("What run.id do you want to use? Available:\n")
   print(names(LOCAL_SEEDS))
   run.id.idx <- as.integer(readLines(n=1))
+
+  if (!length(run.id.idx) || is.na(run.id.idx)) run.id.idx <- DEFAULT_SEED_IDX
   run.id <- names(LOCAL_SEEDS)[[run.id.idx]]
 }
 
@@ -574,7 +578,10 @@ if (parallel) {
   oplan <- plan(multisession, workers = n.workers)
   on.exit(plan(oplan), add = TRUE)
 
-  message(sprintf("Running %d batches across %d workers...", R, n.workers))
+  message(sprintf(
+    "%s: Running %d batches across %d workers...",
+    run.id, R, n.workers
+  ))
 
   results_list <- future.apply::future_lapply(
     seq_len(R),
