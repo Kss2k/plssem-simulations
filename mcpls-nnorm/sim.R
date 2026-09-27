@@ -143,8 +143,8 @@ n <- c(300, 1000)
 # Set up selection indices which are crossed
 idx.model     <- 1
 idx.n         <- seq_along(n)
-idx.ncat      <- c("2", "3", "5", "7")
-idx.skew      <- "Symmetric"
+idx.ncat      <- c("2", "3", "5")
+idx.skew      <- c("Symmetric", "Extreme") # Just symmetric would artificially favor PLSc and LSAM
 idx.dist.exo  <- NNORM_DIST_EXO  # normal, skewed, uniform
 idx.dist.zeta <- NNORM_DIST_ZETA # normal, skewed
 
@@ -155,7 +155,7 @@ IDX.continuous <- expand.grid(
   model     = idx.model,
   n         = idx.n,
   ncat      = NA_character_,
-  skew      = idx.skew,
+  skew      = "Symmetric",
   dist.exo  = idx.dist.exo,
   dist.zeta = idx.dist.zeta,
   type      = "continuous",
