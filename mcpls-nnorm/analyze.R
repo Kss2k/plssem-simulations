@@ -35,10 +35,13 @@ methods_ordered <- c("PLS", "PLSc", "MC-PLSc", "Mplus", "LSAM")
 
 # The two new design factors. `dist.exo` is the distribution of the exogenous
 # predictors (drawn through the calibrated vine) and `dist.zeta` that of the
-# structural disturbance; together they form the factorial replacing the
-# threshold-asymmetry factor of mcpls-nlin.
+# structural disturbance. They are crossed with the threshold-asymmetry factor
+# `skew` carried over from mcpls-nlin: the ordinal arm varies both, since
+# symmetric thresholds alone would artificially favour PLSc and LSAM. The
+# continuous arm has no thresholds, so `skew` is constant ("Symmetric") there.
 dist_exo_ordered  <- c("normal", "skewed", "uniform")
 dist_zeta_ordered <- c("normal", "skewed")
+skew_ordered      <- c("Symmetric", "Moderate", "Extreme", "Alt.Mod", "Alt.Ext")
 
 df <- do.call(rbind, lapply(paths, read)) |>
   mutate(
@@ -49,6 +52,8 @@ df <- do.call(rbind, lapply(paths, read)) |>
     ),
     dist.exo  = factor(dist.exo,  levels = dist_exo_ordered),
     dist.zeta = factor(dist.zeta, levels = dist_zeta_ordered),
+    # `intersect` so this keeps working if `idx.skew` is widened again
+    skew      = factor(skew, levels = intersect(skew_ordered, unique(skew))),
   ) |>
   group_by(id, method) |>
   mutate(
@@ -77,18 +82,30 @@ par2tex <- list(
 
 # The continuous arm has no `ncat`, so the distribution of the predictors takes
 # over the x-axis there and only `dist.zeta` is facetted. In the ordinal arm the
-# layout matches mcpls-nlin (categories on x), with the 3 x 2 distributional
-# factorial where the threshold conditions used to sit.
+# layout matches mcpls-nlin (categories on x) with the 3 x 2 distributional
+# factorial down the rows, and the threshold conditions sitting next to the
+# parameter across the columns -- so Symmetric and Extreme end up adjacent and
+# can be read off against each other directly.
 x_var  <- function(type) if (type == "ordinal") "ncat" else "dist.exo"
 x_lab  <- function(type) if (type == "ordinal") "Categories" else "Predictor distribution"
 row_facets <- function(type) {
   if (type == "ordinal") vars(dist.exo, dist.zeta) else vars(dist.zeta)
 }
+# Column facets for the plots that have a parameter dimension, and for those
+# that do not (inadmissibility, computation time).
+col_facets <- function(type) {
+  if (type == "ordinal") vars(par, skew) else vars(par)
+}
+plain_col_facets <- function(type) {
+  if (type == "ordinal") vars(skew) else NULL
+}
+# `par` holds plotmath ("gamma[1]"); `skew` holds ordinary labels.
+facet_labeller <- labeller(par = label_parsed, .default = label_value)
 
 # Count inadmissibles
-admissible <- group_by(df, id, method, model.id, type, ncat, dist.exo, dist.zeta, n) |>
+admissible <- group_by(df, id, method, model.id, type, ncat, skew, dist.exo, dist.zeta, n) |>
   summarize(admissible = unique(admissible)) |>
-  group_by(method, model.id, type, ncat, dist.exo, dist.zeta, n) |>
+  group_by(method, model.id, type, ncat, skew, dist.exo, dist.zeta, n) |>
   summarize(nruns = length(admissible),
             ninadmissible = sum(!admissible),
             pinadmissible = sum(!admissible)/length(admissible))
@@ -127,6 +144,8 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
   xv <- x_var(type.i)
   xl <- x_lab(type.i)
   rf <- row_facets(type.i)
+  cf <- col_facets(type.i)
+  pf <- plain_col_facets(type.i)
 
   # ----------------------------------------------------------------------------
   # Inadmissible Solutions
@@ -138,7 +157,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
     mutate(xvar = as.factor(.data[[xv]])) |>
     ggplot(aes(x = xvar, y = pinadmissible, colour = method, fill = method)) +
     geom_col(alpha = 0.2, position = dodge) +
-    facet_grid(rows = rf, scales = "fixed") +
+    facet_grid(rows = rf, cols = pf, scales = "fixed") +
     # coord_cartesian(ylim = c(0, 1)) +
     scale_y_continuous(labels = scales::label_percent(accuracy = 1)) +
     # ggtitle(sprintf("Percentage inadmissible solutions (n=%i) model %d", n.i, model.i)) +
@@ -156,7 +175,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
     ggplot(aes(x = xvar, y = dist.zeta)) +
     geom_tile(aes(fill=pinadmissible)) +
     geom_text(aes(label=paste0(round(pinadmissible,1), "%"))) +
-    facet_wrap(~method) +
+    facet_grid(rows = vars(method), cols = pf) +
     ylab("Disturbance distribution") +
     xlab(xl) +
     scale_fill_gradient(low = "white", high = "red") +
@@ -190,7 +209,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
       par %in% param & n == n.i & model.id == model.i & type == type.i
     ) |>
     group_by(
-      method, ncat, dist.exo, dist.zeta, par
+      method, ncat, skew, dist.exo, dist.zeta, par
     ) |>
     summarize(
         bias       = E(bias, na.rm = TRUE),
@@ -215,9 +234,9 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
     geom_errorbar(position = dodge, width = 0.25) +
     facet_grid(
       rows = rf,
-      cols = vars(par),
+      cols = cf,
       scales = "fixed",
-      labeller = label_parsed
+      labeller = facet_labeller
     ) +
     # ggtitle(sprintf("n = %i, model = %i, %s", n.i, model.i, type.i)) +
     ylab("Bias") +
@@ -247,7 +266,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
       !inadmissible.id &
       par %in% param & n == n.i & model.id == model.i & type == type.i
     ) |>
-      group_by(method, ncat, dist.exo, dist.zeta, par) |>
+      group_by(method, ncat, skew, dist.exo, dist.zeta, par) |>
       summarize(
         se = mean(se[admissible.se], na.rm = TRUE),
         sd = sd(est, na.rm = TRUE),
@@ -269,9 +288,9 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
       geom_point(size = 2) +
       facet_grid(
         rows = rf,
-        cols = vars(par),
+        cols = cf,
         scales = "fixed",
-        labeller = label_parsed
+        labeller = facet_labeller
       ) +
       ylim(0.8, 1.6) +
       annotate("rect",
@@ -294,7 +313,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
       !inadmissible.id &
       par == param[[1]] & n == n.i & model.id == model.i & type == type.i
     ) |>
-      group_by(method, ncat, dist.exo, dist.zeta, par) |>
+      group_by(method, ncat, skew, dist.exo, dist.zeta, par) |>
       summarize(
         se = mean(se[admissible.se], na.rm = TRUE),
         sd = sd(est, na.rm = TRUE),
@@ -321,9 +340,9 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
       geom_point(size = 2) +
       facet_grid(
         rows = rf,
-        cols = vars(par),
+        cols = cf,
         scales = "fixed",
-        labeller = label_parsed
+        labeller = facet_labeller
       ) +
       # ggtitle(sprintf("n = %i, model = %i, %s", n.i, model.i, type.i)) +
       ylab("SE/SD") +
@@ -342,7 +361,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
       n == n.i & model.id == model.i & type == type.i &
       grepl("v2-tuf", id)
     ) |>
-    group_by(method, ncat, dist.exo, dist.zeta) |>
+    group_by(method, ncat, skew, dist.exo, dist.zeta) |>
     summarize(mean_time = mean(time, na.rm = TRUE)) |>
     mutate(xvar = as.factor(.data[[xv]])) |>
     ggplot(aes(
@@ -354,6 +373,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
     geom_col(alpha = 0.2, position = dodge) +
     facet_grid(
       rows = rf,
+      cols = pf,
       scales = "fixed"
     ) +
     # ggtitle(sprintf("n = %i, model = %i, %s", n.i, model.i, type.i)) +
@@ -450,7 +470,7 @@ bimodality_coefficient <- function(x) {
 
 bimodality <- df |>
   filter(method == "MC-PLSc", admissible, model.id == target.id) |>
-  group_by(par, type, n, ncat, dist.exo, dist.zeta) |>
+  group_by(par, type, n, ncat, skew, dist.exo, dist.zeta) |>
   summarize(N = length(est), BC = bimodality_coefficient(est), .groups = "drop") |>
   filter(!is.na(BC))
 
