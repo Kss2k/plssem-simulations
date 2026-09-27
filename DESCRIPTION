@@ -6,6 +6,9 @@ Imports:
   modsem,
   plssem,
   MplusAutomation,
+  lavaan,
+  covsim,
+  rvinecopulib,
   stringr
 Remotes:
   kss2k/plssem
