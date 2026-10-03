@@ -102,6 +102,15 @@ plain_col_facets <- function(type) {
 # `par` holds plotmath ("gamma[1]"); `skew` holds ordinary labels.
 facet_labeller <- labeller(par = label_parsed, .default = label_value)
 
+# Computation times are only comparable within one machine, so the timing plots
+# are restricted to a single run.id -- whichever contributed most rows, rather
+# than a hardcoded name that goes stale when the run moves to another machine.
+# `id` is "<run.id>-<batch>-<iteration>", so drop the two trailing numbers.
+df$run.id <- sub("-[0-9]+-[0-9]+$", "", df$id)
+timing.runid <- names(sort(table(df$run.id), decreasing = TRUE))[[1L]]
+message("Timing plots restricted to run.id: ", timing.runid,
+        " (of: ", paste(sort(unique(df$run.id)), collapse = ", "), ")")
+
 # Count inadmissibles
 admissible <- group_by(df, id, method, model.id, type, ncat, skew, dist.exo, dist.zeta, n) |>
   summarize(admissible = unique(admissible)) |>
@@ -359,7 +368,7 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
     filter(df,
       !inadmissible.id &
       n == n.i & model.id == model.i & type == type.i &
-      grepl("v2-tuf", id)
+      run.id == timing.runid
     ) |>
     group_by(method, ncat, skew, dist.exo, dist.zeta) |>
     summarize(mean_time = mean(time, na.rm = TRUE)) |>
