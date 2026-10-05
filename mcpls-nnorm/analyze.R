@@ -31,7 +31,8 @@ read <- function(path) {
 }
 
 
-methods_ordered <- c("PLS", "PLSc", "MC-PLSc", "Mplus", "LSAM")
+methods_drop <- "LSAM" # for now
+methods_ordered <- c("PLS", "PLSc", "MC-PLSc", "Mplus")
 
 # The two new design factors. `dist.exo` is the distribution of the exogenous
 # predictors (drawn through the calibrated vine) and `dist.zeta` that of the
@@ -44,6 +45,7 @@ dist_zeta_ordered <- c("normal", "skewed")
 skew_ordered      <- c("Symmetric", "Moderate", "Extreme", "Alt.Mod", "Alt.Ext")
 
 df <- do.call(rbind, lapply(paths, read)) |>
+  filter(!method %in% methods_drop) |>
   mutate(
     bias = est - true,
     method = factor(method,
@@ -124,20 +126,20 @@ print(admissible, n = 500)
 
 EMPTY_LIST <- vector("list", NROW(simsplit))
 
-plots_inadmissible      <- EMPTY_LIST
-plots_time              <- EMPTY_LIST
-plots_bias_l1_l2        <- EMPTY_LIST
-plots_bias_b1           <- EMPTY_LIST
-plots_bias_b1_b2        <- EMPTY_LIST
-plots_bias_b2           <- EMPTY_LIST
-plots_bias_b3           <- EMPTY_LIST
-plots_se_sd_ratio_b1    <- EMPTY_LIST
-plots_se_sd_ratio_b2    <- EMPTY_LIST
-plots_se_sd_ratio_b3    <- EMPTY_LIST
-plots_se_sd_ratio_b1_b2 <- EMPTY_LIST
-plots_se_sd_b1          <- EMPTY_LIST
-plots_se_sd_b2          <- EMPTY_LIST
-plots_se_sd_b3          <- EMPTY_LIST
+plots_nnorm_inadmissible      <- EMPTY_LIST
+plots_nnorm_time              <- EMPTY_LIST
+plots_nnorm_bias_l1_l2        <- EMPTY_LIST
+plots_nnorm_bias_b1           <- EMPTY_LIST
+plots_nnorm_bias_b1_b2        <- EMPTY_LIST
+plots_nnorm_bias_b2           <- EMPTY_LIST
+plots_nnorm_bias_b3           <- EMPTY_LIST
+plots_nnorm_se_sd_ratio_b1    <- EMPTY_LIST
+plots_nnorm_se_sd_ratio_b2    <- EMPTY_LIST
+plots_nnorm_se_sd_ratio_b3    <- EMPTY_LIST
+plots_nnorm_se_sd_ratio_b1_b2 <- EMPTY_LIST
+plots_nnorm_se_sd_b1          <- EMPTY_LIST
+plots_nnorm_se_sd_b2          <- EMPTY_LIST
+plots_nnorm_se_sd_b3          <- EMPTY_LIST
 
 for (i in seq_len(NROW(simsplit))) suppressMessages({
   cat(sprintf("%i...\n", i))
@@ -394,26 +396,26 @@ for (i in seq_len(NROW(simsplit))) suppressMessages({
   # Save
   # ----------------------------------------------------------------------------
 
-  plots_time[[i]] <- timeplot
-  plots_bias_l1_l2[[i]] <- plot_bias(c("Y=~y1", "Y=~y2"))
-  plots_bias_b1[[i]] <- plot_bias("Y~X")
-  plots_bias_b2[[i]] <- plot_bias("Y~Z")
-  plots_bias_b1_b2[[i]] <- plot_bias(c("Y~X", "Y~Z"))
-  plots_bias_b3[[i]] <- plot_bias("Y~X:Z")
-  plots_se_sd_ratio_b1_b2[[i]] <- plot_se_sd_ratio(c("Y~X", "Y~Z"))
-  plots_se_sd_ratio_b2[[i]] <- plot_se_sd_ratio("Y~Z")
-  plots_se_sd_ratio_b3[[i]] <- plot_se_sd_ratio("Y~X:Z")
-  plots_se_sd_b1[[i]] <- plot_se_sd("Y~X")
-  plots_se_sd_b2[[i]] <- plot_se_sd("Y~Z")
-  plots_se_sd_b3[[i]] <- plot_se_sd("Y~X:Z")
-  plots_inadmissible[[i]] <- pinadmissible
+  plots_nnorm_time[[i]] <- timeplot
+  plots_nnorm_bias_l1_l2[[i]] <- plot_bias(c("Y=~y1", "Y=~y2"))
+  plots_nnorm_bias_b1[[i]] <- plot_bias("Y~X")
+  plots_nnorm_bias_b2[[i]] <- plot_bias("Y~Z")
+  plots_nnorm_bias_b1_b2[[i]] <- plot_bias(c("Y~X", "Y~Z"))
+  plots_nnorm_bias_b3[[i]] <- plot_bias("Y~X:Z")
+  plots_nnorm_se_sd_ratio_b1_b2[[i]] <- plot_se_sd_ratio(c("Y~X", "Y~Z"))
+  plots_nnorm_se_sd_ratio_b2[[i]] <- plot_se_sd_ratio("Y~Z")
+  plots_nnorm_se_sd_ratio_b3[[i]] <- plot_se_sd_ratio("Y~X:Z")
+  plots_nnorm_se_sd_b1[[i]] <- plot_se_sd("Y~X")
+  plots_nnorm_se_sd_b2[[i]] <- plot_se_sd("Y~Z")
+  plots_nnorm_se_sd_b3[[i]] <- plot_se_sd("Y~X:Z")
+  plots_nnorm_inadmissible[[i]] <- pinadmissible
 })
 
 dodge <- 0.25
 # A plot with computation time accross all conditions and methods. The ordinal
 # arm varies with the number of categories; the continuous arm is a single point
 # per method, drawn at ncat = 1 so both fit on one axis.
-plot_time_all <- print(
+plot_nnorm_time_all <- print(
   df |> mutate(n = as.factor(n), ncat = ifelse(is.na(ncat), 1L, ncat)) |>
   group_by(method, ncat, n) |>
   summarize(mean = mean(time), sd = sd(time), lower = mean - sd, upper = mean + sd) |>
@@ -433,68 +435,16 @@ idx <- which(simsplit$n == target.n & simsplit$model.id == target.id &
              simsplit$type == target.type)
 
 if (FALSE) {
-  print(plots_inadmissible[[idx]])
-  print(plots_time[[idx]])
-  print(plots_bias_l1_l2[[idx]])
-  print(plots_bias_b1[[idx]])
-  print(plots_bias_b2[[idx]])
-  print(plots_bias_b3[[idx]])
-  print(plots_se_sd_ratio_b1[[idx]])
-  print(plots_se_sd_ratio_b2[[idx]])
-  print(plots_se_sd_ratio_b3[[idx]])
-  print(plots_se_sd_b1[[idx]])
-  print(plots_se_sd_b2[[idx]])
-  print(plots_se_sd_b3[[idx]])
-}
-
-
-# ------------------------------------------------------------------------------
-# Multimodality check (reported in the Discussion)
-# ------------------------------------------------------------------------------
-# If the stochastic root-finding procedure were converging to different roots of
-# h across replicates, this would be expected to show up as multimodality in the
-# sampling distributions of the MC-PLSc estimates. We therefore compute the
-# bimodality coefficient (BC) for every parameter-by-condition distribution.
-#
-# BC = (skew^2 + 1) / (kurt + 3 * (N - 1)^2 / ((N - 2) * (N - 3)))
-#
-# Values above the benchmark 5/9 ~= 0.555 (the value expected for a uniform
-# distribution) are typically interpreted as indicating bimodality; see
-# Pfister, Schwarz, Janczyk, Dale & Freeman (2013), doi:10.3389/fpsyg.2013.00700
-
-bimodality_coefficient <- function(x) {
-  x <- x[is.finite(x)]
-  N <- length(x)
-  if (N < 8) return(NA_real_)
-
-  m <- mean(x)
-  s <- sd(x)
-  if (s == 0) return(NA_real_)
-
-  skew <- sum((x - m)^3) / (N * s^3)
-  kurt <- sum((x - m)^4) / (N * s^4) - 3
-
-  (skew^2 + 1) / (kurt + 3 * (N - 1)^2 / ((N - 2) * (N - 3)))
-}
-
-bimodality <- df |>
-  filter(method == "MC-PLSc", admissible, model.id == target.id) |>
-  group_by(par, type, n, ncat, skew, dist.exo, dist.zeta) |>
-  summarize(N = length(est), BC = bimodality_coefficient(est), .groups = "drop") |>
-  filter(!is.na(BC))
-
-cat(sprintf(
-  paste0("Multimodality check (MC-PLSc):\n",
-         "  conditions evaluated : %d\n",
-         "  BC > 0.555           : %d\n",
-         "  max BC               : %.3f\n",
-         "  median BC            : %.3f\n"),
-  NROW(bimodality),
-  sum(bimodality$BC > 5 / 9),
-  max(bimodality$BC),
-  median(bimodality$BC)
-))
-
-if (FALSE) {
-  print(arrange(bimodality, desc(BC)), n = 25)
+  print(plots_nnorm_inadmissible[[idx]])
+  print(plots_nnorm_time[[idx]])
+  print(plots_nnorm_bias_l1_l2[[idx]])
+  print(plots_nnorm_bias_b1[[idx]])
+  print(plots_nnorm_bias_b2[[idx]])
+  print(plots_nnorm_bias_b3[[idx]])
+  print(plots_nnorm_se_sd_ratio_b1[[idx]])
+  print(plots_nnorm_se_sd_ratio_b2[[idx]])
+  print(plots_nnorm_se_sd_ratio_b3[[idx]])
+  print(plots_nnorm_se_sd_b1[[idx]])
+  print(plots_nnorm_se_sd_b2[[idx]])
+  print(plots_nnorm_se_sd_b3[[idx]])
 }
