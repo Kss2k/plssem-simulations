@@ -32,7 +32,7 @@ read <- function(path) {
 
 
 methods_drop <- "LSAM" # for now
-methods_ordered <- c("PLS", "PLSc", "MC-PLSc", "Mplus")
+methods_ordered <- c("PLS", "PLSc", "MC-OrdPLSc", "Mplus")
 
 # The two new design factors. `dist.exo` is the distribution of the exogenous
 # predictors (drawn through the calibrated vine) and `dist.zeta` that of the
@@ -45,6 +45,7 @@ dist_zeta_ordered <- c("normal", "skewed")
 skew_ordered      <- c("Symmetric", "Moderate", "Extreme", "Alt.Mod", "Alt.Ext")
 
 df <- do.call(rbind, lapply(paths, read)) |>
+  mutate(method = ifelse(method == "MC-PLSc", "MC-OrdPLSc", method)) |>
   filter(!method %in% methods_drop) |>
   mutate(
     bias = est - true,
