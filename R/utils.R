@@ -116,12 +116,42 @@ print.simoutput <- function(x, ...) {
 print_sep <- \() cat(strrep("─", options("width")[[1]]), "\n")
 
 
-sim_cont_data <- function(syntax, n = n) {
-  
+sim_cont_data <- function(syntax, n = n, icc = NULL, rsd = NULL) {
   parTable <- modsemify(syntax)
   parTable$est <- as.numeric(parTable$mod)
 
-  plssem:::simulateDataParTable(parTable, N = n)$ov
+  is.mlm <- any(parTable$lhs == "level" & parTable$op == ":")
+
+  if (!is.mlm)
+    return(plssem:::simulateDataParTable(parTable, N = n)$ov)
+
+  idx.l1 <- which(
+    parTable$lhs == "level" & parTable$op == ":" & parTable$rhs %in% c("1", "within")
+  )
+
+  idx.l2 <- which(
+    parTable$lhs == "level" & parTable$op == ":" & parTable$rhs %in% c("2", "between")
+  )
+
+  parTableL1 <- parTable[(idx.l1+1):(idx.l2-1),,drop=FALSE]
+  parTableL2 <- parTable[(idx.l2+1):NROW(parTable),,drop=FALSE]
+
+  parStruct <- list(
+    level.1 = parTableL1,
+    level.2 = parTableL2,
+    icc     = icc,
+    rsd     = rsd
+  )
+
+  parTableCleaned <- parTable
+  parTableCleaned$mod <- ""
+
+  parsed <- plssem::parseMultilevelModelArguments(
+    parTable = modsem:::parTableToSyntax(parTableCleaned),
+
+  )
+  simL2 <- plssem::simulateDataParTable(parTable
+  simMLM <- 
 }
 
 
