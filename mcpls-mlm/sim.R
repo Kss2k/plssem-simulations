@@ -18,6 +18,22 @@ PROJECT_ROOT <- .root_info$project.root
 RESULTS_DIR <- normalizePath("results", mustWork = FALSE)
 dir.create(RESULTS_DIR, showWarnings = FALSE)
 
+# Log file for this session. A new file is created at each startup (so the logs
+# of previous sessions are kept), and each (parallel) worker appends a line for
+# every finished iteration, as the live output of the workers isn't visible when
+# running in parallel. Follow it with e.g. `tail -f logs/log-<stamp>.txt`.
+LOG_DIR  <- normalizePath("logs", mustWork = FALSE)
+dir.create(LOG_DIR, showWarnings = FALSE)
+LOG_FILE <- file.path(LOG_DIR, sprintf("log-%s.txt", format(Sys.time(), "%Y-%m-%d-%H-%M-%S")))
+
+write_log <- function(...) {
+  line <- sprintf("[%s | pid %d] %s", format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
+                  Sys.getpid(), paste0(...))
+  cat(line, "\n", file = LOG_FILE, append = TRUE, sep = "")
+}
+
+write_log("Session started")
+
 # Run settings. Edit these before sourcing/running this script in R.
 checkIfExists <- TRUE
 R             <- 200L
@@ -440,6 +456,11 @@ if (is.null(run.id)) {
   run.id <- names(LOCAL_SEEDS)[[run.id.idx]]
 }
 
+write_log(sprintf(
+  "run.id = %s, R = %d, cells = %d, iterations = %d, parallel = %s, workers = %d",
+  run.id, R, K, total, parallel, if (parallel) n.workers else 1L
+))
+
 # The run.id specifies what seed we set
 set.seed(LOCAL_SEEDS[[run.id]])
 
@@ -461,6 +482,7 @@ run_batch <- function(i) {
     message(sprintf(
       "Skipping iteration batch %d, as it has already been run...", i)
     )
+    write_log(sprintf("batch %d: skipped (already run)", i))
 
     results.i <- read.csv(file.path(RESULTS_DIR, files[which(match)[[1L]]]))
     results.i <- results.i[-1] # drop rownames
@@ -539,6 +561,21 @@ run_batch <- function(i) {
 
     print(plssem:::plssemParTable(do.call(rbind, unname(results.ij))))
     results.i <- rbind(results.i, do.call(rbind, unname(results.ij)))
+
+    # A failed method has no estimates (see `get_output()`)
+    status <- vapply(results.ij, FUN.VALUE = character(1L), FUN = \(r) {
+      if (all(is.na(r$est))) "FAILED"
+      else if (all(r$admissible)) "admissible"
+      else "INADMISSIBLE"
+    })
+
+    write_log(sprintf(
+      "batch %d, iteration %d/%d (id = %d): model = %s, n = %d, k = %d, ncat = %s, skew = %s | %s",
+      i, j, K, id, names(models)[[idx.modj]], n.i, k.i, ncat, skew,
+      paste(sprintf("%s: %.1fs, %s", names(results.ij),
+                    vapply(results.ij, \(r) r$time[[1L]], numeric(1L)), status),
+            collapse = " | ")
+    ))
   }
 
   stamp <- substr(Sys.time(), 1, 16) |>
@@ -547,6 +584,7 @@ run_batch <- function(i) {
 
   filename.sub <- file.path(RESULTS_DIR, sprintf("%s-%s.csv", filePrefix, stamp))
   write.csv(results.i, filename.sub)
+  write_log(sprintf("batch %d: finished, wrote %s", i, basename(filename.sub)))
 
   results.i
 }
@@ -580,3 +618,4 @@ if (parallel) {
 
 # Each batch already wrote its own CSV; this is just the in-memory aggregate.
 results <- do.call(rbind, results_list)
+write_log("Session finished")
