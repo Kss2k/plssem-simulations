@@ -40,7 +40,7 @@ R             <- 200L
 run.id        <- NULL
 
 parallel  <- TRUE
-n.workers <- 10
+n.workers <- 12
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Model+Parameters

@@ -1,0 +1,64 @@
+# NEW
+[2026-10-21 23:25:02 | pid 3039] Session started
+[2026-10-22 07:18:14 | pid 3087] batch 91, iteration 60/60 (id = 5460): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 42.9s, admissible | Mplus: 279.1s, admissible
+[2026-10-22 07:33:31 | pid 3092] batch 171, iteration 60/60 (id = 10260): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 35.5s, admissible | Mplus: 349.3s, admissible
+[2026-10-22 07:36:28 | pid 3086] batch 112, iteration 60/60 (id = 6720): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 34.1s, admissible | Mplus: 318.0s, admissible
+[2026-10-22 07:49:11 | pid 3091] batch 52, iteration 60/60 (id = 3120): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 34.4s, admissible | Mplus: 357.7s, admissible
+[2026-10-22 07:50:14 | pid 3088] batch 12, iteration 60/60 (id = 720): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 37.6s, admissible | Mplus: 326.7s, admissible
+[2026-10-22 07:55:56 | pid 3094] batch 132, iteration 60/60 (id = 7920): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 38.9s, admissible | Mplus: 409.5s, admissible
+[2026-10-22 08:02:49 | pid 3085] batch 191, iteration 60/60 (id = 11460): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 37.4s, admissible | Mplus: 279.7s, admissible
+[2026-10-22 08:09:44 | pid 3089] batch 71, iteration 60/60 (id = 4260): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 41.7s, admissible | Mplus: 311.1s, admissible
+[2026-10-22 08:40:42 | pid 3090] batch 32, iteration 60/60 (id = 1920): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 43.3s, admissible | Mplus: 300.4s, admissible
+[2026-10-22 08:43:04 | pid 3093] batch 152, iteration 60/60 (id = 9120): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 33.6s, admissible | Mplus: 304.2s, admissible
+
+# OLD
+[2026-10-18 21:00:01 | pid 1549] Session started
+[2026-10-19 05:51:58 | pid 1592] batch 124, iteration 60/60 (id = 7440): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 38.0s, admissible | Mplus: 287.5s, admissible
+[2026-10-19 06:32:54 | pid 1595] batch 44, iteration 60/60 (id = 2640): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 40.3s, admissible | Mplus: 363.8s, admissible
+[2026-10-19 06:43:45 | pid 1598] batch 5, iteration 60/60 (id = 300): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 38.2s, admissible | Mplus: 788.6s, FAILED
+[2026-10-19 06:48:21 | pid 1594] batch 24, iteration 60/60 (id = 1440): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 37.7s, admissible | Mplus: 299.1s, admissible
+[2026-10-19 06:59:19 | pid 1597] batch 164, iteration 60/60 (id = 9840): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 44.4s, admissible | Mplus: 382.9s, admissible
+[2026-10-19 07:01:20 | pid 1601] batch 84, iteration 60/60 (id = 5040): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 42.3s, admissible | Mplus: 330.0s, admissible
+[2026-10-19 07:03:24 | pid 1593] batch 144, iteration 60/60 (id = 8640): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 43.1s, admissible | Mplus: 447.7s, admissible
+[2026-10-19 07:07:46 | pid 1600] batch 184, iteration 60/60 (id = 11040): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 48.0s, admissible | Mplus: 282.2s, admissible
+[2026-10-19 07:18:41 | pid 1599] batch 105, iteration 60/60 (id = 6300): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 48.3s, admissible | Mplus: 389.9s, admissible
+[2026-10-19 07:46:13 | pid 1596] batch 64, iteration 60/60 (id = 3840): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 39.7s, admissible | Mplus: 430.8s, admissible
+
+# NEW
+start.new <- ISOdatetime(year=2026, month=10, day=21, hour=23, min=25, sec=02) # pid 3039] Session started
+end.new <- c(
+  ISOdatetime(year=2026, month=10, day=22, hour=07, min=18, sec=14), # pid 3087] batch 91, iteration 60/60 (id = 5460): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 42.9s, admissible | Mplus: 279.1s, admissible
+  ISOdatetime(year=2026, month=10, day=22, hour=07, min=33, sec=31), # pid 3092] batch 171, iteration 60/60 (id = 10260): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 35.5s, admissible | Mplus: 349.3s, admissible
+  ISOdatetime(year=2026, month=10, day=22, hour=07, min=36, sec=28), # pid 3086] batch 112, iteration 60/60 (id = 6720): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 34.1s, admissible | Mplus: 318.0s, admissible
+  ISOdatetime(year=2026, month=10, day=22, hour=07, min=49, sec=11), # pid 3091] batch 52, iteration 60/60 (id = 3120): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 34.4s, admissible | Mplus: 357.7s, admissible
+  ISOdatetime(year=2026, month=10, day=22, hour=07, min=50, sec=14), # pid 3088] batch 12, iteration 60/60 (id = 720): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 37.6s, admissible | Mplus: 326.7s, admissible
+  ISOdatetime(year=2026, month=10, day=22, hour=07, min=55, sec=56), # pid 3094] batch 132, iteration 60/60 (id = 7920): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 38.9s, admissible | Mplus: 409.5s, admissible
+  ISOdatetime(year=2026, month=10, day=22, hour=08, min=02, sec=49), # pid 3085] batch 191, iteration 60/60 (id = 11460): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 37.4s, admissible | Mplus: 279.7s, admissible
+  ISOdatetime(year=2026, month=10, day=22, hour=08, min=09, sec=44), # pid 3089] batch 71, iteration 60/60 (id = 4260): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 41.7s, admissible | Mplus: 311.1s, admissible
+  ISOdatetime(year=2026, month=10, day=22, hour=08, min=40, sec=42), # pid 3090] batch 32, iteration 60/60 (id = 1920): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 43.3s, admissible | Mplus: 300.4s, admissible
+  ISOdatetime(year=2026, month=10, day=22, hour=08, min=43, sec=04) # pid 3093] batch 152, iteration 60/60 (id = 9120): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 33.6s, admissible | Mplus: 304.2s, admissible
+)
+
+# OLD
+start.old <- ISOdatetime(year=2026, month=10, day=18, hour=21, min=00, sec=01) # pid 1549] Session started
+end.old <- c(
+  ISOdatetime(year=2026, month=10, day=19, hour=05, min=51, sec=58), # pid 1592] batch 124, iteration 60/60 (id = 7440): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 38.0s, admissible | Mplus: 287.5s, admissible
+  ISOdatetime(year=2026, month=10, day=19, hour=06, min=32, sec=54), # pid 1595] batch 44, iteration 60/60 (id = 2640): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 40.3s, admissible | Mplus: 363.8s, admissible
+  ISOdatetime(year=2026, month=10, day=19, hour=06, min=43, sec=45), # pid 1598] batch 5, iteration 60/60 (id = 300): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 38.2s, admissible | Mplus: 788.6s, FAILED
+  ISOdatetime(year=2026, month=10, day=19, hour=06, min=48, sec=21), # pid 1594] batch 24, iteration 60/60 (id = 1440): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 37.7s, admissible | Mplus: 299.1s, admissible
+  ISOdatetime(year=2026, month=10, day=19, hour=06, min=59, sec=19), # pid 1597] batch 164, iteration 60/60 (id = 9840): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 44.4s, admissible | Mplus: 382.9s, admissible
+  ISOdatetime(year=2026, month=10, day=19, hour=07, min=01, sec=20), # pid 1601] batch 84, iteration 60/60 (id = 5040): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 42.3s, admissible | Mplus: 330.0s, admissible
+  ISOdatetime(year=2026, month=10, day=19, hour=07, min=03, sec=24), # pid 1593] batch 144, iteration 60/60 (id = 8640): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 43.1s, admissible | Mplus: 447.7s, admissible
+  ISOdatetime(year=2026, month=10, day=19, hour=07, min=07, sec=46), # pid 1600] batch 184, iteration 60/60 (id = 11040): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 48.0s, admissible | Mplus: 282.2s, admissible
+  ISOdatetime(year=2026, month=10, day=19, hour=07, min=18, sec=41), # pid 1599] batch 105, iteration 60/60 (id = 6300): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 48.3s, admissible | Mplus: 389.9s, admissible
+  ISOdatetime(year=2026, month=10, day=19, hour=07, min=46, sec=13) # pid 1596] batch 64, iteration 60/60 (id = 3840): model = random_slope, n = 50, k = 90, ncat = 5, skew = Moderate | MC-PLS: 39.7s, admissible | Mplus: 430.8s, admissible
+)
+
+
+cat(sprintf("Ryzen 9 7900X | mean = %.3f, sd = %.3f\n",
+  mean(end.old - start.old), sd(end.old - start.old)
+))
+
+cat(sprintf("Ryzen 9 9950X | mean = %.3f, sd = %.3f\n",
+  mean(end.new - start.new), sd(end.new - start.new)
+))

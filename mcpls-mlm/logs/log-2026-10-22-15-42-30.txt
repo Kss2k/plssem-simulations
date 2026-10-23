@@ -1,0 +1,175 @@
+[2026-10-22 15:42:30 | pid 1703] Session started
+[2026-10-22 15:42:34 | pid 1703] run.id = v1-rebekka, R = 200, cells = 60, iterations = 12000, parallel = TRUE, workers = 12
+[2026-10-22 15:42:35 | pid 1749] batch 1: skipped (already run)
+[2026-10-22 15:42:35 | pid 1755] batch 68: skipped (already run)
+[2026-10-22 15:42:35 | pid 1756] batch 51: skipped (already run)
+[2026-10-22 15:42:35 | pid 1752] batch 184: skipped (already run)
+[2026-10-22 15:42:35 | pid 1751] batch 84: skipped (already run)
+[2026-10-22 15:42:35 | pid 1747] batch 151: skipped (already run)
+[2026-10-22 15:42:35 | pid 1758] batch 167: skipped (already run)
+[2026-10-22 15:42:35 | pid 1748] batch 101: skipped (already run)
+[2026-10-22 15:42:35 | pid 1749] batch 2: skipped (already run)
+[2026-10-22 15:42:35 | pid 1755] batch 69: skipped (already run)
+[2026-10-22 15:42:35 | pid 1749] batch 3: skipped (already run)
+[2026-10-22 15:42:35 | pid 1756] batch 52: skipped (already run)
+[2026-10-22 15:42:35 | pid 1752] batch 185: skipped (already run)
+[2026-10-22 15:42:35 | pid 1755] batch 70: skipped (already run)
+[2026-10-22 15:42:35 | pid 1749] batch 4: skipped (already run)
+[2026-10-22 15:42:35 | pid 1751] batch 85: skipped (already run)
+[2026-10-22 15:42:35 | pid 1747] batch 152: skipped (already run)
+[2026-10-22 15:42:35 | pid 1758] batch 168: skipped (already run)
+[2026-10-22 15:42:35 | pid 1748] batch 102: skipped (already run)
+[2026-10-22 15:42:35 | pid 1752] batch 186: skipped (already run)
+[2026-10-22 15:42:35 | pid 1749] batch 5: skipped (already run)
+[2026-10-22 15:42:35 | pid 1755] batch 71: skipped (already run)
+[2026-10-22 15:42:35 | pid 1751] batch 86: skipped (already run)
+[2026-10-22 15:42:35 | pid 1758] batch 169: skipped (already run)
+[2026-10-22 15:42:35 | pid 1748] batch 103: skipped (already run)
+[2026-10-22 15:42:35 | pid 1752] batch 187: skipped (already run)
+[2026-10-22 15:42:35 | pid 1749] batch 6: skipped (already run)
+[2026-10-22 15:42:35 | pid 1751] batch 87: skipped (already run)
+[2026-10-22 15:42:35 | pid 1758] batch 170: skipped (already run)
+[2026-10-22 15:42:35 | pid 1748] batch 104: skipped (already run)
+[2026-10-22 15:42:35 | pid 1752] batch 188: skipped (already run)
+[2026-10-22 15:42:35 | pid 1749] batch 7: skipped (already run)
+[2026-10-22 15:42:35 | pid 1751] batch 88: skipped (already run)
+[2026-10-22 15:42:35 | pid 1758] batch 171: skipped (already run)
+[2026-10-22 15:42:35 | pid 1748] batch 105: skipped (already run)
+[2026-10-22 15:42:35 | pid 1752] batch 189: skipped (already run)
+[2026-10-22 15:42:35 | pid 1749] batch 8: skipped (already run)
+[2026-10-22 15:42:35 | pid 1751] batch 89: skipped (already run)
+[2026-10-22 15:42:35 | pid 1748] batch 106: skipped (already run)
+[2026-10-22 15:42:35 | pid 1752] batch 190: skipped (already run)
+[2026-10-22 15:42:35 | pid 1749] batch 9: skipped (already run)
+[2026-10-22 15:42:35 | pid 1751] batch 90: skipped (already run)
+[2026-10-22 15:42:35 | pid 1748] batch 107: skipped (already run)
+[2026-10-22 15:42:35 | pid 1752] batch 191: skipped (already run)
+[2026-10-22 15:42:35 | pid 1749] batch 10: skipped (already run)
+[2026-10-22 15:42:35 | pid 1751] batch 91: skipped (already run)
+[2026-10-22 15:42:35 | pid 1748] batch 108: skipped (already run)
+[2026-10-22 15:42:35 | pid 1749] batch 11: skipped (already run)
+[2026-10-22 15:42:35 | pid 1748] batch 109: skipped (already run)
+[2026-10-22 15:42:35 | pid 1749] batch 12: skipped (already run)
+[2026-10-22 15:42:35 | pid 1748] batch 110: skipped (already run)
+[2026-10-22 15:42:35 | pid 1748] batch 111: skipped (already run)
+[2026-10-22 15:42:35 | pid 1748] batch 112: skipped (already run)
+[2026-10-22 15:46:12 | pid 1751] batch 92, iteration 1/60 (id = 5461): model = within_xz, n = 20, k = 30, ncat = Inf, skew = None | MC-PLS: 11.8s, admissible | Mplus: 204.9s, admissible
+[2026-10-22 15:46:14 | pid 1754] batch 18, iteration 1/60 (id = 1021): model = within_xz, n = 20, k = 30, ncat = Inf, skew = None | MC-PLS: 13.5s, admissible | Mplus: 204.9s, admissible
+[2026-10-22 15:46:16 | pid 1750] batch 134, iteration 1/60 (id = 7981): model = within_xz, n = 20, k = 30, ncat = Inf, skew = None | MC-PLS: 12.8s, admissible | Mplus: 207.5s, admissible
+[2026-10-22 15:46:17 | pid 1752] batch 192, iteration 1/60 (id = 11461): model = within_xz, n = 20, k = 30, ncat = Inf, skew = None | MC-PLS: 12.4s, admissible | Mplus: 208.9s, admissible
+[2026-10-22 15:46:18 | pid 1757] batch 35, iteration 1/60 (id = 2041): model = within_xz, n = 20, k = 30, ncat = Inf, skew = None | MC-PLS: 11.2s, admissible | Mplus: 211.4s, admissible
+[2026-10-22 15:46:27 | pid 1756] batch 53, iteration 1/60 (id = 3121): model = within_xz, n = 20, k = 30, ncat = Inf, skew = None | MC-PLS: 11.5s, admissible | Mplus: 220.2s, admissible
+[2026-10-22 15:46:37 | pid 1747] batch 153, iteration 1/60 (id = 9121): model = within_xz, n = 20, k = 30, ncat = Inf, skew = None | MC-PLS: 12.6s, admissible | Mplus: 228.7s, admissible
+[2026-10-22 15:46:44 | pid 1753] batch 118, iteration 1/60 (id = 7021): model = within_xz, n = 20, k = 30, ncat = Inf, skew = None | MC-PLS: 12.5s, admissible | Mplus: 235.8s, admissible
+[2026-10-22 15:46:44 | pid 1749] batch 13, iteration 1/60 (id = 721): model = within_xz, n = 20, k = 30, ncat = Inf, skew = None | MC-PLS: 12.8s, admissible | Mplus: 235.5s, admissible
+[2026-10-22 15:46:47 | pid 1758] batch 172, iteration 1/60 (id = 10261): model = within_xz, n = 20, k = 30, ncat = Inf, skew = None | MC-PLS: 12.6s, admissible | Mplus: 239.0s, admissible
+[2026-10-22 15:46:49 | pid 1748] batch 113, iteration 1/60 (id = 6721): model = within_xz, n = 20, k = 30, ncat = Inf, skew = None | MC-PLS: 12.4s, admissible | Mplus: 241.2s, admissible
+[2026-10-22 15:46:54 | pid 1755] batch 72, iteration 1/60 (id = 4261): model = within_xz, n = 20, k = 30, ncat = Inf, skew = None | MC-PLS: 12.5s, admissible | Mplus: 246.2s, admissible
+[2026-10-22 15:46:58 | pid 1754] batch 18, iteration 2/60 (id = 1022): model = random_slope, n = 20, k = 30, ncat = Inf, skew = None | MC-PLS: 19.5s, admissible | Mplus: 23.8s, admissible
+[2026-10-22 15:46:59 | pid 1751] batch 92, iteration 2/60 (id = 5462): model = random_slope, n = 20, k = 30, ncat = Inf, skew = None | MC-PLS: 25.2s, admissible | Mplus: 20.9s, admissible
+[2026-10-22 15:47:05 | pid 1750] batch 134, iteration 2/60 (id = 7982): model = random_slope, n = 20, k = 30, ncat = Inf, skew = None | MC-PLS: 24.1s, admissible | Mplus: 24.9s, admissible
+[2026-10-22 15:47:09 | pid 1757] batch 35, iteration 2/60 (id = 2042): model = random_slope, n = 20, k = 30, ncat = Inf, skew = None | MC-PLS: 28.7s, admissible | Mplus: 21.5s, admissible
+[2026-10-22 15:47:09 | pid 1752] batch 192, iteration 2/60 (id = 11462): model = random_slope, n = 20, k = 30, ncat = Inf, skew = None | MC-PLS: 27.6s, admissible | Mplus: 24.4s, admissible
+[2026-10-22 15:47:14 | pid 1756] batch 53, iteration 2/60 (id = 3122): model = random_slope, n = 20, k = 30, ncat = Inf, skew = None | MC-PLS: 21.5s, admissible | Mplus: 24.4s, admissible
+[2026-10-22 15:47:21 | pid 1747] batch 153, iteration 2/60 (id = 9122): model = random_slope, n = 20, k = 30, ncat = Inf, skew = None | MC-PLS: 22.2s, admissible | Mplus: 21.0s, admissible
+[2026-10-22 15:47:33 | pid 1753] batch 118, iteration 2/60 (id = 7022): model = random_slope, n = 20, k = 30, ncat = Inf, skew = None | MC-PLS: 24.0s, admissible | Mplus: 24.5s, admissible
+[2026-10-22 15:47:37 | pid 1748] batch 113, iteration 2/60 (id = 6722): model = random_slope, n = 20, k = 30, ncat = Inf, skew = None | MC-PLS: 21.3s, admissible | Mplus: 25.4s, admissible
+[2026-10-22 15:47:38 | pid 1749] batch 13, iteration 2/60 (id = 722): model = random_slope, n = 20, k = 30, ncat = Inf, skew = None | MC-PLS: 25.6s, admissible | Mplus: 27.4s, admissible
+[2026-10-22 15:47:43 | pid 1755] batch 72, iteration 2/60 (id = 4262): model = random_slope, n = 20, k = 30, ncat = Inf, skew = None | MC-PLS: 22.9s, admissible | Mplus: 25.0s, admissible
+[2026-10-22 15:47:44 | pid 1758] batch 172, iteration 2/60 (id = 10262): model = random_slope, n = 20, k = 30, ncat = Inf, skew = None | MC-PLS: 36.7s, admissible | Mplus: 19.2s, admissible
+[2026-10-22 15:55:43 | pid 1754] batch 18, iteration 3/60 (id = 1023): model = within_xz, n = 50, k = 30, ncat = Inf, skew = None | MC-PLS: 11.3s, admissible | Mplus: 513.9s, admissible
+[2026-10-22 15:55:54 | pid 1753] batch 118, iteration 3/60 (id = 7023): model = within_xz, n = 50, k = 30, ncat = Inf, skew = None | MC-PLS: 12.1s, admissible | Mplus: 489.0s, admissible
+[2026-10-22 15:56:03 | pid 1756] batch 53, iteration 3/60 (id = 3123): model = within_xz, n = 50, k = 30, ncat = Inf, skew = None | MC-PLS: 11.2s, admissible | Mplus: 517.4s, admissible
+[2026-10-22 15:56:13 | pid 1755] batch 72, iteration 3/60 (id = 4263): model = within_xz, n = 50, k = 30, ncat = Inf, skew = None | MC-PLS: 10.2s, admissible | Mplus: 499.8s, admissible
+[2026-10-22 15:56:39 | pid 1752] batch 192, iteration 3/60 (id = 11463): model = within_xz, n = 50, k = 30, ncat = Inf, skew = None | MC-PLS: 12.7s, admissible | Mplus: 556.7s, admissible
+[2026-10-22 15:56:40 | pid 1751] batch 92, iteration 3/60 (id = 5463): model = within_xz, n = 50, k = 30, ncat = Inf, skew = None | MC-PLS: 11.5s, admissible | Mplus: 568.8s, admissible
+[2026-10-22 15:56:42 | pid 1747] batch 153, iteration 3/60 (id = 9123): model = within_xz, n = 50, k = 30, ncat = Inf, skew = None | MC-PLS: 11.9s, admissible | Mplus: 548.8s, admissible
+[2026-10-22 15:56:43 | pid 1750] batch 134, iteration 3/60 (id = 7983): model = within_xz, n = 50, k = 30, ncat = Inf, skew = None | MC-PLS: 13.6s, admissible | Mplus: 563.3s, admissible
+[2026-10-22 15:56:46 | pid 1757] batch 35, iteration 3/60 (id = 2043): model = within_xz, n = 50, k = 30, ncat = Inf, skew = None | MC-PLS: 10.6s, admissible | Mplus: 566.3s, admissible
+[2026-10-22 15:56:51 | pid 1749] batch 13, iteration 3/60 (id = 723): model = within_xz, n = 50, k = 30, ncat = Inf, skew = None | MC-PLS: 11.4s, admissible | Mplus: 541.3s, admissible
+[2026-10-22 15:56:52 | pid 1754] batch 18, iteration 4/60 (id = 1024): model = random_slope, n = 50, k = 30, ncat = Inf, skew = None | MC-PLS: 24.4s, admissible | Mplus: 43.7s, admissible
+[2026-10-22 15:56:55 | pid 1753] batch 118, iteration 4/60 (id = 7024): model = random_slope, n = 50, k = 30, ncat = Inf, skew = None | MC-PLS: 22.1s, admissible | Mplus: 37.9s, admissible
+[2026-10-22 15:57:05 | pid 1756] batch 53, iteration 4/60 (id = 3124): model = random_slope, n = 50, k = 30, ncat = Inf, skew = None | MC-PLS: 22.2s, admissible | Mplus: 39.9s, admissible
+[2026-10-22 15:57:17 | pid 1755] batch 72, iteration 4/60 (id = 4264): model = random_slope, n = 50, k = 30, ncat = Inf, skew = None | MC-PLS: 23.4s, admissible | Mplus: 40.5s, admissible
+[2026-10-22 15:57:38 | pid 1748] batch 113, iteration 3/60 (id = 6723): model = within_xz, n = 50, k = 30, ncat = Inf, skew = None | MC-PLS: 11.1s, admissible | Mplus: 590.4s, admissible
+[2026-10-22 15:57:40 | pid 1751] batch 92, iteration 4/60 (id = 5464): model = random_slope, n = 50, k = 30, ncat = Inf, skew = None | MC-PLS: 25.9s, admissible | Mplus: 33.9s, admissible
+[2026-10-22 15:57:46 | pid 1758] batch 172, iteration 3/60 (id = 10263): model = within_xz, n = 50, k = 30, ncat = Inf, skew = None | MC-PLS: 9.6s, admissible | Mplus: 592.3s, admissible
+[2026-10-22 15:57:52 | pid 1747] batch 153, iteration 4/60 (id = 9124): model = random_slope, n = 50, k = 30, ncat = Inf, skew = None | MC-PLS: 29.8s, admissible | Mplus: 40.1s, admissible
+[2026-10-22 15:57:59 | pid 1757] batch 35, iteration 4/60 (id = 2044): model = random_slope, n = 50, k = 30, ncat = Inf, skew = None | MC-PLS: 25.8s, admissible | Mplus: 46.5s, admissible
+[2026-10-22 15:57:59 | pid 1752] batch 192, iteration 4/60 (id = 11464): model = random_slope, n = 50, k = 30, ncat = Inf, skew = None | MC-PLS: 30.2s, admissible | Mplus: 49.0s, admissible
+[2026-10-22 15:58:00 | pid 1750] batch 134, iteration 4/60 (id = 7984): model = random_slope, n = 50, k = 30, ncat = Inf, skew = None | MC-PLS: 28.4s, admissible | Mplus: 47.8s, admissible
+[2026-10-22 15:58:05 | pid 1749] batch 13, iteration 4/60 (id = 724): model = random_slope, n = 50, k = 30, ncat = Inf, skew = None | MC-PLS: 24.7s, admissible | Mplus: 49.0s, admissible
+[2026-10-22 15:58:50 | pid 1748] batch 113, iteration 4/60 (id = 6724): model = random_slope, n = 50, k = 30, ncat = Inf, skew = None | MC-PLS: 25.2s, admissible | Mplus: 46.1s, admissible
+[2026-10-22 15:58:59 | pid 1758] batch 172, iteration 4/60 (id = 10264): model = random_slope, n = 50, k = 30, ncat = Inf, skew = None | MC-PLS: 26.4s, admissible | Mplus: 46.4s, admissible
+[2026-10-22 16:03:53 | pid 1753] batch 118, iteration 5/60 (id = 7025): model = within_xz, n = 20, k = 60, ncat = Inf, skew = None | MC-PLS: 11.6s, admissible | Mplus: 406.0s, admissible
+[2026-10-22 16:04:29 | pid 1754] batch 18, iteration 5/60 (id = 1025): model = within_xz, n = 20, k = 60, ncat = Inf, skew = None | MC-PLS: 11.7s, admissible | Mplus: 445.3s, admissible
+[2026-10-22 16:04:43 | pid 1747] batch 153, iteration 5/60 (id = 9125): model = within_xz, n = 20, k = 60, ncat = Inf, skew = None | MC-PLS: 10.6s, admissible | Mplus: 399.9s, admissible
+[2026-10-22 16:04:56 | pid 1753] batch 118, iteration 6/60 (id = 7026): model = random_slope, n = 20, k = 60, ncat = Inf, skew = None | MC-PLS: 23.9s, admissible | Mplus: 38.4s, admissible
+[2026-10-22 16:05:03 | pid 1755] batch 72, iteration 5/60 (id = 4265): model = within_xz, n = 20, k = 60, ncat = Inf, skew = None | MC-PLS: 9.9s, admissible | Mplus: 454.7s, admissible
+[2026-10-22 16:05:04 | pid 1751] batch 92, iteration 5/60 (id = 5465): model = within_xz, n = 20, k = 60, ncat = Inf, skew = None | MC-PLS: 7.9s, admissible | Mplus: 435.7s, admissible
+[2026-10-22 16:05:07 | pid 1757] batch 35, iteration 5/60 (id = 2045): model = within_xz, n = 20, k = 60, ncat = Inf, skew = None | MC-PLS: 10.3s, admissible | Mplus: 417.1s, admissible
+[2026-10-22 16:05:25 | pid 1756] batch 53, iteration 5/60 (id = 3125): model = within_xz, n = 20, k = 60, ncat = Inf, skew = None | MC-PLS: 11.1s, admissible | Mplus: 487.7s, admissible
+[2026-10-22 16:05:34 | pid 1754] batch 18, iteration 6/60 (id = 1026): model = random_slope, n = 20, k = 60, ncat = Inf, skew = None | MC-PLS: 21.3s, admissible | Mplus: 42.4s, admissible
+[2026-10-22 16:05:50 | pid 1748] batch 113, iteration 5/60 (id = 6725): model = within_xz, n = 20, k = 60, ncat = Inf, skew = None | MC-PLS: 8.5s, admissible | Mplus: 411.0s, admissible
+[2026-10-22 16:05:55 | pid 1750] batch 134, iteration 5/60 (id = 7985): model = within_xz, n = 20, k = 60, ncat = Inf, skew = None | MC-PLS: 11.6s, admissible | Mplus: 463.1s, admissible
+[2026-10-22 16:05:55 | pid 1747] batch 153, iteration 6/60 (id = 9126): model = random_slope, n = 20, k = 60, ncat = Inf, skew = None | MC-PLS: 27.7s, admissible | Mplus: 44.0s, admissible
+[2026-10-22 16:05:58 | pid 1752] batch 192, iteration 5/60 (id = 11465): model = within_xz, n = 20, k = 60, ncat = Inf, skew = None | MC-PLS: 12.7s, admissible | Mplus: 465.4s, admissible
+[2026-10-22 16:05:58 | pid 1749] batch 13, iteration 5/60 (id = 725): model = within_xz, n = 20, k = 60, ncat = Inf, skew = None | MC-PLS: 9.8s, admissible | Mplus: 462.8s, admissible
+[2026-10-22 16:06:05 | pid 1751] batch 92, iteration 6/60 (id = 5466): model = random_slope, n = 20, k = 60, ncat = Inf, skew = None | MC-PLS: 21.1s, admissible | Mplus: 39.3s, admissible
+[2026-10-22 16:06:14 | pid 1755] batch 72, iteration 6/60 (id = 4266): model = random_slope, n = 20, k = 60, ncat = Inf, skew = None | MC-PLS: 29.2s, admissible | Mplus: 42.0s, admissible
+[2026-10-22 16:06:14 | pid 1757] batch 35, iteration 6/60 (id = 2046): model = random_slope, n = 20, k = 60, ncat = Inf, skew = None | MC-PLS: 22.1s, admissible | Mplus: 44.9s, admissible
+[2026-10-22 16:06:35 | pid 1756] batch 53, iteration 6/60 (id = 3126): model = random_slope, n = 20, k = 60, ncat = Inf, skew = None | MC-PLS: 23.2s, admissible | Mplus: 46.0s, admissible
+[2026-10-22 16:06:40 | pid 1758] batch 172, iteration 5/60 (id = 10265): model = within_xz, n = 20, k = 60, ncat = Inf, skew = None | MC-PLS: 8.6s, admissible | Mplus: 451.5s, admissible
+[2026-10-22 16:07:01 | pid 1748] batch 113, iteration 6/60 (id = 6726): model = random_slope, n = 20, k = 60, ncat = Inf, skew = None | MC-PLS: 22.9s, admissible | Mplus: 47.0s, admissible
+[2026-10-22 16:07:06 | pid 1752] batch 192, iteration 6/60 (id = 11466): model = random_slope, n = 20, k = 60, ncat = Inf, skew = None | MC-PLS: 25.0s, admissible | Mplus: 43.1s, admissible
+[2026-10-22 16:07:07 | pid 1749] batch 13, iteration 6/60 (id = 726): model = random_slope, n = 20, k = 60, ncat = Inf, skew = None | MC-PLS: 24.4s, admissible | Mplus: 43.7s, admissible
+[2026-10-22 16:07:10 | pid 1750] batch 134, iteration 6/60 (id = 7986): model = random_slope, n = 20, k = 60, ncat = Inf, skew = None | MC-PLS: 23.3s, admissible | Mplus: 51.7s, admissible
+[2026-10-22 16:07:39 | pid 1758] batch 172, iteration 6/60 (id = 10266): model = random_slope, n = 20, k = 60, ncat = Inf, skew = None | MC-PLS: 19.2s, admissible | Mplus: 39.1s, admissible
+[2026-10-22 16:23:04 | pid 1753] batch 118, iteration 7/60 (id = 7027): model = within_xz, n = 50, k = 60, ncat = Inf, skew = None | MC-PLS: 10.4s, admissible | Mplus: 1076.8s, admissible
+[2026-10-22 16:23:20 | pid 1754] batch 18, iteration 7/60 (id = 1027): model = within_xz, n = 50, k = 60, ncat = Inf, skew = None | MC-PLS: 11.2s, admissible | Mplus: 1054.3s, admissible
+[2026-10-22 16:24:01 | pid 1749] batch 13, iteration 7/60 (id = 727): model = within_xz, n = 50, k = 60, ncat = Inf, skew = None | MC-PLS: 11.2s, admissible | Mplus: 1002.1s, admissible
+[2026-10-22 16:24:01 | pid 1751] batch 92, iteration 7/60 (id = 5467): model = within_xz, n = 50, k = 60, ncat = Inf, skew = None | MC-PLS: 13.8s, admissible | Mplus: 1061.7s, admissible
+[2026-10-22 16:24:36 | pid 1753] batch 118, iteration 8/60 (id = 7028): model = random_slope, n = 50, k = 60, ncat = Inf, skew = None | MC-PLS: 20.8s, admissible | Mplus: 70.8s, admissible
+[2026-10-22 16:24:48 | pid 1755] batch 72, iteration 7/60 (id = 4267): model = within_xz, n = 50, k = 60, ncat = Inf, skew = None | MC-PLS: 13.2s, admissible | Mplus: 1100.3s, admissible
+[2026-10-22 16:24:55 | pid 1747] batch 153, iteration 7/60 (id = 9127): model = within_xz, n = 50, k = 60, ncat = Inf, skew = None | MC-PLS: 13.9s, admissible | Mplus: 1125.4s, admissible
+[2026-10-22 16:25:02 | pid 1757] batch 35, iteration 7/60 (id = 2047): model = within_xz, n = 50, k = 60, ncat = Inf, skew = None | MC-PLS: 14.0s, admissible | Mplus: 1112.6s, admissible
+[2026-10-22 16:25:07 | pid 1756] batch 53, iteration 7/60 (id = 3127): model = within_xz, n = 50, k = 60, ncat = Inf, skew = None | MC-PLS: 9.9s, admissible | Mplus: 1102.3s, admissible
+[2026-10-22 16:25:11 | pid 1754] batch 18, iteration 8/60 (id = 1028): model = random_slope, n = 50, k = 60, ncat = Inf, skew = None | MC-PLS: 30.6s, admissible | Mplus: 79.9s, admissible
+[2026-10-22 16:25:17 | pid 1752] batch 192, iteration 7/60 (id = 11467): model = within_xz, n = 50, k = 60, ncat = Inf, skew = None | MC-PLS: 10.5s, admissible | Mplus: 1079.4s, admissible
+[2026-10-22 16:25:32 | pid 1748] batch 113, iteration 7/60 (id = 6727): model = within_xz, n = 50, k = 60, ncat = Inf, skew = None | MC-PLS: 11.7s, admissible | Mplus: 1098.9s, admissible
+[2026-10-22 16:25:45 | pid 1749] batch 13, iteration 8/60 (id = 728): model = random_slope, n = 50, k = 60, ncat = Inf, skew = None | MC-PLS: 27.3s, admissible | Mplus: 76.9s, admissible
+[2026-10-22 16:25:48 | pid 1750] batch 134, iteration 7/60 (id = 7987): model = within_xz, n = 50, k = 60, ncat = Inf, skew = None | MC-PLS: 10.5s, admissible | Mplus: 1106.9s, admissible
+[2026-10-22 16:25:49 | pid 1751] batch 92, iteration 8/60 (id = 5468): model = random_slope, n = 50, k = 60, ncat = Inf, skew = None | MC-PLS: 34.0s, admissible | Mplus: 73.6s, admissible
+[2026-10-22 16:26:39 | pid 1747] batch 153, iteration 8/60 (id = 9128): model = random_slope, n = 50, k = 60, ncat = Inf, skew = None | MC-PLS: 25.3s, admissible | Mplus: 78.2s, admissible
+[2026-10-22 16:26:41 | pid 1758] batch 172, iteration 7/60 (id = 10267): model = within_xz, n = 50, k = 60, ncat = Inf, skew = None | MC-PLS: 11.0s, admissible | Mplus: 1131.5s, admissible
+[2026-10-22 16:26:43 | pid 1755] batch 72, iteration 8/60 (id = 4268): model = random_slope, n = 50, k = 60, ncat = Inf, skew = None | MC-PLS: 26.9s, admissible | Mplus: 87.8s, admissible
+[2026-10-22 16:26:52 | pid 1756] batch 53, iteration 8/60 (id = 3128): model = random_slope, n = 50, k = 60, ncat = Inf, skew = None | MC-PLS: 22.8s, admissible | Mplus: 81.8s, admissible
+[2026-10-22 16:27:04 | pid 1757] batch 35, iteration 8/60 (id = 2048): model = random_slope, n = 50, k = 60, ncat = Inf, skew = None | MC-PLS: 29.4s, admissible | Mplus: 92.4s, admissible
+[2026-10-22 16:27:17 | pid 1752] batch 192, iteration 8/60 (id = 11468): model = random_slope, n = 50, k = 60, ncat = Inf, skew = None | MC-PLS: 31.2s, admissible | Mplus: 88.5s, admissible
+[2026-10-22 16:27:37 | pid 1750] batch 134, iteration 8/60 (id = 7988): model = random_slope, n = 50, k = 60, ncat = Inf, skew = None | MC-PLS: 30.6s, admissible | Mplus: 78.4s, admissible
+[2026-10-22 16:27:38 | pid 1748] batch 113, iteration 8/60 (id = 6728): model = random_slope, n = 50, k = 60, ncat = Inf, skew = None | MC-PLS: 29.4s, admissible | Mplus: 96.1s, admissible
+[2026-10-22 16:28:31 | pid 1758] batch 172, iteration 8/60 (id = 10268): model = random_slope, n = 50, k = 60, ncat = Inf, skew = None | MC-PLS: 30.2s, admissible | Mplus: 78.8s, admissible
+[2026-10-22 16:35:56 | pid 1753] batch 118, iteration 9/60 (id = 7029): model = within_xz, n = 20, k = 90, ncat = Inf, skew = None | MC-PLS: 11.1s, admissible | Mplus: 668.5s, admissible
+[2026-10-22 16:36:27 | pid 1754] batch 18, iteration 9/60 (id = 1029): model = within_xz, n = 20, k = 90, ncat = Inf, skew = None | MC-PLS: 11.2s, admissible | Mplus: 665.1s, admissible
+[2026-10-22 16:37:06 | pid 1751] batch 92, iteration 9/60 (id = 5469): model = within_xz, n = 20, k = 90, ncat = Inf, skew = None | MC-PLS: 11.8s, admissible | Mplus: 664.6s, admissible
+[2026-10-22 16:37:16 | pid 1753] batch 118, iteration 10/60 (id = 7030): model = random_slope, n = 20, k = 90, ncat = Inf, skew = None | MC-PLS: 22.8s, admissible | Mplus: 57.2s, admissible
+[2026-10-22 16:37:18 | pid 1755] batch 72, iteration 9/60 (id = 4269): model = within_xz, n = 20, k = 90, ncat = Inf, skew = None | MC-PLS: 12.3s, admissible | Mplus: 621.4s, admissible
+[2026-10-22 16:37:33 | pid 1749] batch 13, iteration 9/60 (id = 729): model = within_xz, n = 20, k = 90, ncat = Inf, skew = None | MC-PLS: 11.6s, admissible | Mplus: 695.7s, admissible
+[2026-10-22 16:37:41 | pid 1752] batch 192, iteration 9/60 (id = 11469): model = within_xz, n = 20, k = 90, ncat = Inf, skew = None | MC-PLS: 10.3s, admissible | Mplus: 613.5s, admissible
+[2026-10-22 16:37:52 | pid 1757] batch 35, iteration 9/60 (id = 2049): model = within_xz, n = 20, k = 90, ncat = Inf, skew = None | MC-PLS: 8.9s, admissible | Mplus: 638.6s, admissible
+[2026-10-22 16:37:58 | pid 1754] batch 18, iteration 10/60 (id = 1030): model = random_slope, n = 20, k = 90, ncat = Inf, skew = None | MC-PLS: 24.5s, admissible | Mplus: 65.9s, admissible
+[2026-10-22 16:38:05 | pid 1747] batch 153, iteration 9/60 (id = 9129): model = within_xz, n = 20, k = 90, ncat = Inf, skew = None | MC-PLS: 11.5s, admissible | Mplus: 673.3s, admissible
+[2026-10-22 16:38:10 | pid 1756] batch 53, iteration 9/60 (id = 3129): model = within_xz, n = 20, k = 90, ncat = Inf, skew = None | MC-PLS: 10.3s, admissible | Mplus: 666.3s, admissible
+[2026-10-22 16:38:39 | pid 1748] batch 113, iteration 9/60 (id = 6729): model = within_xz, n = 20, k = 90, ncat = Inf, skew = None | MC-PLS: 11.2s, admissible | Mplus: 649.8s, admissible
+[2026-10-22 16:38:43 | pid 1751] batch 92, iteration 10/60 (id = 5470): model = random_slope, n = 20, k = 90, ncat = Inf, skew = None | MC-PLS: 30.1s, admissible | Mplus: 66.8s, admissible
+[2026-10-22 16:38:45 | pid 1755] batch 72, iteration 10/60 (id = 4270): model = random_slope, n = 20, k = 90, ncat = Inf, skew = None | MC-PLS: 27.3s, admissible | Mplus: 59.1s, admissible
+[2026-10-22 16:39:07 | pid 1749] batch 13, iteration 10/60 (id = 730): model = random_slope, n = 20, k = 90, ncat = Inf, skew = None | MC-PLS: 29.5s, admissible | Mplus: 63.7s, admissible
+[2026-10-22 16:39:08 | pid 1752] batch 192, iteration 10/60 (id = 11470): model = random_slope, n = 20, k = 90, ncat = Inf, skew = None | MC-PLS: 20.5s, admissible | Mplus: 65.5s, admissible
+[2026-10-22 16:39:17 | pid 1750] batch 134, iteration 9/60 (id = 7989): model = within_xz, n = 20, k = 90, ncat = Inf, skew = None | MC-PLS: 10.4s, admissible | Mplus: 689.0s, admissible
+[2026-10-22 16:39:30 | pid 1757] batch 35, iteration 10/60 (id = 2050): model = random_slope, n = 20, k = 90, ncat = Inf, skew = None | MC-PLS: 23.5s, admissible | Mplus: 74.5s, admissible
+[2026-10-22 16:39:38 | pid 1747] batch 153, iteration 10/60 (id = 9130): model = random_slope, n = 20, k = 90, ncat = Inf, skew = None | MC-PLS: 23.8s, admissible | Mplus: 68.6s, admissible
+[2026-10-22 16:39:54 | pid 1756] batch 53, iteration 10/60 (id = 3130): model = random_slope, n = 20, k = 90, ncat = Inf, skew = None | MC-PLS: 25.1s, admissible | Mplus: 78.7s, admissible
+[2026-10-22 16:40:14 | pid 1758] batch 172, iteration 9/60 (id = 10269): model = within_xz, n = 20, k = 90, ncat = Inf, skew = None | MC-PLS: 12.2s, admissible | Mplus: 690.8s, admissible
+[2026-10-22 16:40:21 | pid 1748] batch 113, iteration 10/60 (id = 6730): model = random_slope, n = 20, k = 90, ncat = Inf, skew = None | MC-PLS: 24.4s, admissible | Mplus: 76.8s, admissible
+[2026-10-22 16:40:56 | pid 1750] batch 134, iteration 10/60 (id = 7990): model = random_slope, n = 20, k = 90, ncat = Inf, skew = None | MC-PLS: 28.4s, admissible | Mplus: 69.8s, admissible
+[2026-10-22 16:41:54 | pid 1758] batch 172, iteration 10/60 (id = 10270): model = random_slope, n = 20, k = 90, ncat = Inf, skew = None | MC-PLS: 28.8s, admissible | Mplus: 70.5s, admissible
