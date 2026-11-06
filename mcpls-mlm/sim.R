@@ -139,7 +139,37 @@ models <- list(
          Xb ~~ 0.25 * Zb
     ',
     icc = icc,
-    rsd = c(s = 0.4)
+    rsd = c(s = 0.4),
+    # Mplus doesn't report the standardized SD of the random slope, and
+    # standardizes the fixed effect within each cluster (averaged over the
+    # clusters). Both are therefore defined from the unstandardized parameters,
+    # as in the population model (requires modsem >= 1.0.25), see `est_mplus()`
+    syntax.mplus = '
+      level: 1
+         Xw =~ x1 + x2 + x3
+         Zw =~ z1 + z2 + z3
+         Yw =~ y1 + y2 + y3
+         Yw  ~ rv("s") * Xw + gz * Zw
+         Xw ~~ vx * Xw
+         Zw ~~ vz * Zw
+         Xw ~~ cxz * Zw
+         Yw ~~ py * Yw
+      level: 2
+         Xb =~ x1 + x2 + x3
+         Zb =~ z1 + z2 + z3
+         Yb =~ y1 + y2 + y3
+         Yb  ~ Xb + Zb
+         s   ~ gs * Zb
+         s   ~ ms * 1
+         s  ~~ ps * s
+         Zb ~~ vzb * Zb
+         Xb ~~ Zb
+
+      vs     := gs^2 * vzb + ps
+      vyw    := (ms^2 + vs) * vx + gz^2 * vz + 2 * ms * gz * cxz + py
+      rsdstd := sqrt(vs) * sqrt(vx) / sqrt(vyw)
+      g1std  := ms * sqrt(vx) / sqrt(vyw)
+    '
   )
 )
 
@@ -154,7 +184,7 @@ for (m in names(models)) {
 # get a `.l2` suffix (as in `plssem`). The standard deviations of the random
 # slopes (`rsd`) are only estimated by MC-PLS (`rsd.<name>`), and are only
 # recorded as standardized parameters.
-get_true_values <- function(syntax, rsd = NULL) {
+get_true_values <- function(syntax, rsd = NULL, icc = NULL) {
   levels <- split_levels(modsemify(syntax))
 
   std <- do.call(rbind, lapply(1:2, FUN = \(l) {
@@ -185,13 +215,24 @@ get_true_values <- function(syntax, rsd = NULL) {
     ))
   }
 
+  # ICCs of the (latent response) indicators, only estimated by MC-PLS
+  if (length(icc)) {
+    out <- rbind(out, data.frame(
+      par   = paste0("icc.", names(icc)),
+      true  = unname(icc),
+      level = NA_integer_,
+      type  = "standardized"
+    ))
+  }
+
   out$key <- paste(out$type, out$par, sep = ":")
   out
 }
 
 
 for (m in names(models)) {
-  models[[m]]$true <- get_true_values(models[[m]]$syntax, rsd = models[[m]]$rsd)
+  models[[m]]$true <- get_true_values(models[[m]]$syntax, rsd = models[[m]]$rsd,
+                                      icc = models[[m]]$icc)
 }
 
 
@@ -285,22 +326,26 @@ est_pls <- function(model, data, ...) {
   upar <- as.data.frame(plssem::unstandardized_estimates(fit))
 
   coef <- rbind(
-    cbind(spar$est, spar$se),
-    cbind(upar$est, upar$se)
+    cbind(spar$est, spar$se, spar$ci.lower, spar$ci.upper),
+    cbind(upar$est, upar$se, upar$ci.lower, upar$ci.upper)
   )
 
   rownames(coef) <- c(par_keys(spar, "standardized"), par_keys(upar, "unstandardized"))
-  colnames(coef) <- c("est", "se")
+  colnames(coef) <- c("est", "se", "ci.lower", "ci.upper")
 
-  # standard deviations of the random slopes (if any)
-  rsd <- fit@params$rsd
-  if (length(rsd)) {
-    rsd.se <- fit@params$rsd.se
-    if (is.null(rsd.se)) rsd.se <- rep(NA_real_, length(rsd))
+  # standard deviations of the random slopes (if any), and the ICCs, with
+  # (Wald) confidence intervals
+  for (p in c("rsd", "icc")) {
+    x <- fit@params[[p]]
+    if (!length(x)) next
 
-    rsd <- cbind(est = unname(rsd), se = unname(rsd.se[names(rsd)]))
-    rownames(rsd) <- paste0("standardized:rsd.", names(fit@params$rsd))
-    coef <- rbind(coef, rsd)
+    x.se <- fit@params[[paste0(p, ".se")]]
+    x.se <- if (is.null(x.se)) rep(NA_real_, length(x)) else unname(x.se[names(x)])
+
+    x.coef <- cbind(est = unname(x), se = x.se, ci.lower = unname(x) - qnorm(0.975) * x.se,
+                    ci.upper = unname(x) + qnorm(0.975) * x.se)
+    rownames(x.coef) <- paste0("standardized:", p, ".", names(x))
+    coef <- rbind(coef, x.coef)
   }
 
   # NOTE: `checkIfParTableIsAdmissible()` doesn't work for multilevel models
@@ -330,13 +375,23 @@ est_mplus <- function(model, data, ...) {
     spar[[nm]] <- remap(spar[[nm]])
   }
 
+  # The confidence intervals are the 95% (posterior) credible intervals
   coef <- rbind(
-    cbind(spar$est, spar$std.error),
-    cbind(upar$est, upar$std.error)
+    cbind(spar$est, spar$std.error, spar$ci.lower, spar$ci.upper),
+    cbind(upar$est, upar$std.error, upar$ci.lower, upar$ci.upper)
   )
 
   rownames(coef) <- c(par_keys(spar, "standardized"), par_keys(upar, "unstandardized"))
-  colnames(coef) <- c("est", "se")
+  colnames(coef) <- c("est", "se", "ci.lower", "ci.upper")
+
+  # Standardized random slope parameters, defined in `syntax.mplus`
+  keys <- c(rsdstd = "standardized:rsd.s", g1std = "standardized:Yw~Xw")
+  def  <- upar[upar$op == ":=" & tolower(upar$lhs) %in% names(keys), , drop = FALSE]
+  if (NROW(def)) {
+    dcoef <- cbind(est = def$est, se = def$std.error, ci.lower = def$ci.lower, ci.upper = def$ci.upper)
+    rownames(dcoef) <- keys[tolower(def$lhs)]
+    coef <- rbind(dcoef, coef[!rownames(coef) %in% rownames(dcoef), , drop = FALSE])
+  }
 
   # Non-converged models don't produce estimates (i.e., `modsem_mplus()` fails)
   attr(coef, "admissible") <- all(is.finite(spar$est))
@@ -391,7 +446,7 @@ run_estimators <- function(methods,
         func             = est_mplus,
         data             = data_i,
         cluster          = "cluster",
-        model            = model$syntax.est,
+        model            = if (is.null(model$syntax.mplus)) model$syntax.est else model$syntax.mplus,
         true             = model$true,
         extra            = list(k = k.i),
         cleanup          = TRUE,

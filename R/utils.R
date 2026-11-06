@@ -72,6 +72,8 @@ get_output <- function(func,
     par = true$par,
     est = NA,
     se  = NA,
+    ci.lower = NA, # 95% confidence (or credible) interval
+    ci.upper = NA,
     true = true$true,
     method = method,
     id = id,
@@ -101,6 +103,11 @@ get_output <- function(func,
         idx <- match(key, rownames(est)) # parameters which are missing in `est` are NA
         output$est <- est[idx, "est"]
         output$se  <- est[idx, "se"]
+
+        if (all(c("ci.lower", "ci.upper") %in% colnames(est))) {
+          output$ci.lower <- est[idx, "ci.lower"]
+          output$ci.upper <- est[idx, "ci.upper"]
+        }
         output$admissible <- attr(est, "admissible")
 
         if (length(results$warnings)) {
