@@ -6,8 +6,8 @@ devtools::load_all() # load custom utils
 library(mvtnorm)
 library(tidyr)
 library(dplyr)
-library(modsem) # v.1.0.21
-library(plssem) # v.0.1.3
+library(modsem) # v.1.0.25
+library(plssem) # v.0.2.1
 
 .root_info   <- set_project_root()
 setwd("mcpls-nlin")
@@ -24,11 +24,11 @@ reestimate.files <- character()
 # reestimate.files <- list.files("results", pattern = "^results-v0-test.*[.]csv$", full.names = TRUE)
 
 checkIfExists <- TRUE
-R             <- 200L
+R             <- 400L
 run.id        <- NULL
 
 parallel  <- TRUE
-n.workers <- 6
+n.workers <- 12
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Model+Parameters
@@ -229,51 +229,57 @@ run_estimators <- function(methods,
     switch(
       method,
       "MC-OrdPLSc" = get_output(
-        func      = est_pls,
-        data      = data_i,
-        ordered   = ordered,
-        bootstrap = TRUE,
-        boot.R    = 500,
-        model     = model,
-        method    = "MC-OrdPLSc",
-        id        = id,
-        n         = n.i,
-        skew      = skew,
-        ncat      = ncat,
-        model.id  = model.id,
-        seed      = seed
+        func          = est_pls,
+        data          = data_i,
+        ordered       = ordered,
+        bootstrap     = TRUE,
+        boot.R        = 500,
+        boot.ncores   = 2L,
+        boot.parallel = "multicore",
+        model         = model,
+        method        = "MC-OrdPLSc",
+        id            = id,
+        n             = n.i,
+        skew          = skew,
+        ncat          = ncat,
+        model.id      = model.id,
+        seed          = seed
       ),
 
       "PLSc" = get_output(
-        func       = est_pls,
-        data       = data_i,
-        bootstrap  = TRUE,
-        boot.R     = 500,
-        model      = model,
-        method     = "PLSc",
-        consistent = TRUE,
-        n          = n.i,
-        id         = id,
-        skew       = skew,
-        ncat       = ncat,
-        model.id   = model.id,
-        seed       = seed
+        func          = est_pls,
+        data          = data_i,
+        bootstrap     = TRUE,
+        boot.R        = 500,
+        model         = model,
+        method        = "PLSc",
+        consistent    = TRUE,
+        boot.ncores   = 2L,
+        boot.parallel = "multicore",
+        n             = n.i,
+        id            = id,
+        skew          = skew,
+        ncat          = ncat,
+        model.id      = model.id,
+        seed          = seed
       ),
 
       "PLS" = get_output(
-        func       = est_pls,
-        data       = data_i,
-        model      = model,
-        bootstrap  = TRUE,
-        boot.R     = 500,
-        method     = "PLS",
-        consistent = FALSE,
-        n          = n.i,
-        id         = id,
-        skew       = skew,
-        ncat       = ncat,
-        model.id   = model.id,
-        seed       = seed
+        func          = est_pls,
+        data          = data_i,
+        model         = model,
+        bootstrap     = TRUE,
+        boot.R        = 500,
+        method        = "PLS",
+        consistent    = FALSE,
+        boot.ncores   = 2L,
+        boot.parallel = "multicore",
+        n             = n.i,
+        id            = id,
+        skew          = skew,
+        ncat          = ncat,
+        model.id      = model.id,
+        seed          = seed
       ),
 
       "Mplus" = get_output(
@@ -430,10 +436,11 @@ total         <- R * K
 # need different seeds, to generate unique results.
 
 LOCAL_SEEDS <- c(
-  "v1-test"   = 5340956,
-  "v1-vivo"   = 9144416,
-  "v1-tuf"    = 1210967,
-  "v1-promax" = 2983429
+  "v1-test"    = 5340956,
+  "v1-vivo"    = 9144416,
+  "v1-tuf"     = 1210967,
+  "v1-promax"  = 2983429,
+  "v2-rebekka" = 1210967 # same simulation as the one run on v1-tuf, but on a different machine
 )
 
 if (reestimate) {
